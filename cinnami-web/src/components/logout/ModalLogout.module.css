@@ -1,0 +1,79 @@
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.14);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.modal {
+  background: #fff9f5;
+  border-radius: 22px;
+  box-shadow: 0 4px 36px 0 rgba(0,0,0,0.12);
+  padding: 32px 30px;
+  max-width: 370px;
+  width: 90vw;
+  text-align: center;
+  animation: fadeIn 0.25s;
+}
+
+.titulo {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #B28153;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mensaje {
+  color: #574949;
+  margin-bottom: 30px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.botonCancelar {
+  flex: 1 1 0;
+  padding: 11px 0;
+  border: 2px solid #B87333;
+  border-radius: 14px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: #B87333;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.botonCancelar:hover {
+  background: #f6ebe2;
+  color: #9E7A54;
+  border-color: #b28153;
+}
+
+.botonConfirmar {
+  flex: 1 1 0;
+  padding: 11px 0;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #B28153;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.botonConfirmar:hover {
+  background: #a76a2c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(40px);}
+  to   { opacity: 1; transform: none;}
+}

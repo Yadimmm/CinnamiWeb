@@ -1,0 +1,420 @@
+/* Variables globales del proyecto */
+:root {
+  --color-primario-oscuro: #2D1B1B;
+  --color-cafe-principal: #5D4037;
+  --color-dorado-acento: #D4A574;
+  --color-cobre-acento: #B87333;
+  --fondo-claro: #F8F6F0;
+  --fondo-tarjeta: #FFFFFF;
+  --texto-principal: #2D1B1B;
+  --texto-secundario: #6B5B73;
+  --texto-claro: #9E9E9E;
+  --borde-claro: #E0E0E0;
+  --sombra-suave: rgba(0, 0, 0, 0.08);
+}
+
+/* Reseteo básico para el contenedor */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--fondo-claro);
+  color: var(--texto-principal);
+  line-height: 1.6;
+  font-size: 16px;
+  padding-left: 280px; /* Espacio para la barra lateral */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.brandName {
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #cb7f47, #e2aa6d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+/* Barra de navegación lateral */
+.barraNavegacion {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-right: 1px solid var(--borde-claro);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px var(--sombra-suave);
+}
+
+/* Container para los iconos */
+.iconContainer {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+  background: rgba(184, 115, 51, 0.1);
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+/* Estilos base para iconos */
+.menuIcon {
+  font-size: 22px;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  z-index: 2;
+  color: var(--texto-secundario);
+}
+
+.contenedorNavegacion {
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Sección del logo */
+.seccionLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--borde-claro);
+}
+
+.logoPrincipal {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--color-dorado-acento), var(--color-cobre-acento));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+}
+
+.textoMarca {
+  display: flex;
+  flex-direction: column;
+}
+
+.nombreMarca {
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #cb7f47, #e2aa6d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+.lemaMarca {
+  font-size: 12px;
+  color: var(--texto-claro);
+  font-weight: normal;
+}
+
+/* Menú de navegación vertical */
+.menuNavegacion {
+  display: flex;
+  list-style: none;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.menuNavegacion li {
+  width: 100%;
+}
+
+.enlaceMenu {
+  color: var(--texto-secundario);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 15px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.enlaceMenu span {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.enlaceMenu span > *:first-child {
+  font-size: 20px;
+}
+
+.enlaceMenu span > *:first-child {
+  width: 27px;
+  height: 27px;
+  padding: 3px;
+  background: rgba(184, 115, 51, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.enlaceMenu:hover {
+  color: var(--color-cobre-acento);
+  background: rgba(184, 115, 51, 0.08);
+  transform: translateX(5px);
+}
+
+
+.enlaceMenu::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 30px;
+  background: var(--color-cobre-acento);
+  border-radius: 0 5px 5px 0;
+  transition: width 0.3s ease;
+}
+
+.enlaceMenu:hover::before {
+  width: 4px;
+}
+
+/* Estilos para el enlace activo */
+.enlaceMenu.activo {
+  color: var(--color-cobre-acento);
+  background: rgba(184, 115, 51, 0.12);
+  font-weight: 600;
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.15);
+}
+
+.enlaceMenu.activo span > *:first-child {
+  background: linear-gradient(135deg, var(--color-dorado-acento), var(--color-cobre-acento));
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(184, 115, 51, 0.4);
+}
+
+.enlaceMenu.activo::before {
+  width: 4px;
+  background: var(--color-cobre-acento);
+}
+
+/* Header superior para móviles */
+.headerSuperior {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--borde-claro);
+  z-index: 1002;
+  box-shadow: 0 2px 10px var(--sombra-suave);
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Logo en el header móvil */
+.logoHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.logoHeader .logoPrincipal {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+
+.logoHeader .nombreMarca {
+  font-size: 20px;
+}
+
+.logoHeader .lemaMarca {
+  font-size: 11px;
+}
+
+/* Ocultar logo cuando el menú está activo */
+.logoHeader.oculto {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* Responsive para tablets */
+@media (max-width: 1024px) {
+  body {
+    padding-left: 0;
+    padding-top: 70px;
+  }
+
+  .headerSuperior {
+    display: flex;
+  }
+
+  .barraNavegacion {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    flex-direction: column;
+    transition: left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1004;
+  }
+
+  .barraNavegacion.activa {
+    left: 0;
+  }
+
+  .contenedorNavegacion {
+    flex-direction: column;
+    padding: 30px 20px;
+    height: 100%;
+  }
+
+  .seccionLogo {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--borde-claro);
+  }
+
+  .menuNavegacion {
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+  }
+
+  .enlaceMenu {
+    padding: 15px 20px;
+    font-size: 15px;
+  }
+
+  .enlaceMenu:hover {
+    transform: translateX(5px);
+  }
+
+  .enlaceMenu::before {
+    display: block;
+  }
+}
+
+/* Botón hamburguesa para tablets y móviles */
+.botonMenuMovil {
+  display: none;
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px var(--sombra-suave);
+  z-index: 1005;
+  transition: all 0.3s ease;
+}
+
+.botonMenuMovil:hover {
+  transform: scale(1.05);
+}
+
+.lineaHamburguesa {
+  width: 25px;
+  height: 3px;
+  background: var(--color-cobre-acento);
+  margin: 3px 0;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Animación del botón hamburguesa cuando está activo */
+.botonMenuMovil.activo .lineaHamburguesa:nth-child(1) {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.botonMenuMovil.activo .lineaHamburguesa:nth-child(2) {
+  opacity: 1;
+  transform: scale(1.1);
+  background: var(--color-cobre-acento);
+}
+
+.botonMenuMovil.activo .lineaHamburguesa:nth-child(3) {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Responsive para móviles */
+@media (max-width: 1024px) {
+  .botonMenuMovil {
+    display: flex;
+  }
+}
+
+/* Ajustes para el contenido principal */
+.mainContent {
+  margin-left: 280px;
+  padding: 40px;
+  min-height: 100vh;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+    padding-top: 110px;
+    padding: 40px;
+    padding-top: 110px;
+  }
+}
+
+/* Overlay para cerrar el menú */
+.overlayMenu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1003;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.overlayMenu.activo {
+  display: block;
+  opacity: 1;
+}

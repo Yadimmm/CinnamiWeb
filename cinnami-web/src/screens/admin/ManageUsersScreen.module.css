@@ -1,0 +1,934 @@
+/* Variables globales del proyecto actualizadas */
+:root {
+  --colorPrimarioOscuro: #2D1B1B;
+  --colorCafePrincipal: #5D4037;
+  --colorDoradoAcento: #D4A574;
+  --colorCobreAcento: #B87333;
+  --fondoClaro: #FAF8F6;
+  --fondoTarjeta: #FFFFFF;
+  --fondoModal: #F8F6F4;
+  --textoPrincipal: #2D1B1B;
+  --textoSecundario: #6B5B73;
+  --textoClaro: #9E9E9E;
+  --colorExito: #4CAF50;
+  --colorAdvertencia: #FF9800;
+  --colorPeligro: #F44336;
+  --bordeClaro: #E8E2DC;
+  --sombraSuave: rgba(0, 0, 0, 0.05);
+  --sombraMedia: rgba(0, 0, 0, 0.1);
+  --colorInactivo: #DC3545;
+  --colorActivo: #28A745;
+}
+
+.title {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 28px;
+  font-weight: 600;
+  text-align: left;
+  margin: 0;
+  padding: 20px 0;
+  position: relative;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--textoPrincipal);
+  text-align: left;
+  margin: 0 0 20px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  animation: none;
+}
+
+.containerPrincipal {
+  padding-left: 280px;
+  padding-top: 10px;
+  background-color: var(--fondoClaro);
+  min-height: 100vh;
+}
+
+.mainContent {
+  padding: 20px 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Panel principal actualizado */
+.panel {
+  background: var(--fondoTarjeta);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 20px var(--sombraSuave);
+  border: 1px solid var(--bordeClaro);
+}
+
+/* Barra de búsqueda actualizada */
+.searchBar {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 20px 14px 45px;
+  border: 1px solid var(--bordeClaro);
+  border-radius: 12px;
+  font-size: 15px;
+  background: var(--fondoClaro);
+  color: var(--textoPrincipal);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--colorCobreAcento);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.08);
+}
+
+.searchInput::placeholder {
+  color: var(--textoClaro);
+  font-style: normal;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--textoClaro);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Botón de agregar usuario */
+.addButtonContainer {
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.addButton {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.2);
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(184, 115, 51, 0.3);
+}
+
+/* Grid de usuarios responsivo */
+.usersGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+  margin-top: 20px;
+}
+
+@media (min-width: 1024px) {
+  .usersGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .usersGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+}
+
+/* Tarjetas de usuario actualizadas */
+.userCard {
+  background: #f9f7f2;
+  border-radius: 16px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  border: 1px solid var(--bordeClaro);
+  position: relative;
+  min-height: 200px;
+  box-shadow: 0 2px 10px var(--sombraSuave);
+}
+
+.userCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px var(--sombraMedia);
+  border-color: var(--colorCobreAcento);
+}
+
+.userCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.disabledCard {
+  opacity: 0.7;
+  background-color: #FAFAFA;
+}
+
+.disabledCard::before {
+  background-color: var(--colorInactivo);
+}
+
+.userInfo {
+  flex-grow: 1;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.userName {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--textoPrincipal);
+  margin: 0 0 15px 0;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.userDetails {
+  font-size: 14px;
+  color: var(--textoSecundario);
+  line-height: 1.6;
+  text-align: left;
+}
+
+.userDetails p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userDetails p strong {
+  color: var(--textoPrincipal);
+  font-weight: 600;
+  min-width: 80px;
+}
+
+/* Badges actualizados */
+.disabledBadge {
+  background-color: var(--colorInactivo);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleBadge.docente {
+  background-color: #e4e2fe;
+    color: #1b6b99;
+}
+
+.roleBadge.admin {
+  background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Estado badge */
+.estadoBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estadoBadge.activo {
+  background: linear-gradient(135deg, var(--colorActivo), #1e7e34);
+}
+
+.estadoBadge.inactivo {
+  background: linear-gradient(135deg, var(--colorInactivo), #c21807);
+}
+
+/* Botones de acción actualizados */
+.userActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.viewButton,
+.editButton,
+.toggleButton,
+.deleteButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.viewButton {
+  background: linear-gradient(135deg, #6c757d, #545b62);
+}
+
+.viewButton:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.editButton {
+  background: rgb(87, 199, 87);
+}
+
+.editButton:hover {
+  background: rgb(46, 182, 46);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.disableButton {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.disableButton:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.enableButton {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.enableButton:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.deleteButton {
+  background: #e34252;
+}
+
+.deleteButton:hover {
+  background:  #c21807;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Modal actualizado */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+.modalContent {
+  background: var(--fondoTarjeta);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  border-bottom: 1px solid var(--bordeClaro);
+  background: var(--fondoModal);
+  border-radius: 20px 20px 0 0;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--textoPrincipal);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--textoClaro);
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: var(--colorPeligro);
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Formulario del modal */
+.modalForm {
+  padding: 30px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input {
+  padding: 14px 18px;
+  border: 1px solid var(--bordeClaro);
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background-color: var(--fondoClaro);
+  color: var(--textoPrincipal);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--colorCobreAcento);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.08);
+}
+
+.input:disabled {
+  background-color: #F5F5F5;
+  color: var(--textoClaro);
+  cursor: not-allowed;
+  border-color: #E0E0E0;
+}
+
+.input::placeholder {
+  color: var(--textoClaro);
+  font-style: normal;
+}
+
+/* Contenedor de contraseña */
+.passwordContainer {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--textoClaro);
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.passwordToggle:hover {
+  color: var(--colorCobreAcento);
+  background-color: rgba(184, 115, 51, 0.1);
+}
+
+/* Selector de rol actualizado */
+.roleSelector {
+  margin-bottom: 25px;
+}
+
+.roleLabel {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--textoPrincipal);
+  font-size: 15px;
+}
+
+.roleButtons {
+  display: flex;
+  gap: 15px;
+}
+
+.roleButton {
+  padding: 12px 24px;
+  border: 2px solid var(--bordeClaro);
+  background-color: var(--fondoClaro);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  color: var(--textoPrincipal);
+  font-size: 14px;
+}
+
+.roleButton:hover:not(:disabled) {
+  border-color: var(--colorCobreAcento);
+  background-color: rgba(184, 115, 51, 0.1);
+}
+
+.roleButton.active {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  border-color: var(--colorCobreAcento);
+  color: white;
+}
+
+.roleButton:disabled {
+  background-color: #F5F5F5;
+  border-color: #E0E0E0;
+  color: var(--textoClaro);
+  cursor: not-allowed;
+}
+
+/* Selector de edificio actualizado */
+.buildingSelector {
+  margin-bottom: 25px;
+}
+
+.buildingLabel {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--textoPrincipal);
+  font-size: 15px;
+}
+
+.buildingButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.buildingButton {
+  padding: 12px 18px;
+  border: 2px solid var(--bordeClaro);
+  background-color: var(--fondoClaro);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  color: var(--textoPrincipal);
+  min-width: 50px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.buildingButton:hover:not(:disabled) {
+  border-color: var(--colorCobreAcento);
+  background-color: rgba(184, 115, 51, 0.1);
+}
+
+.buildingButton.active {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  border-color: var(--colorCobreAcento);
+  color: white;
+}
+
+.buildingButton:disabled {
+  background-color: #F5F5F5;
+  border-color: #E0E0E0;
+  color: var(--textoClaro);
+  cursor: not-allowed;
+}
+
+/* Botones de acción del modal */
+.modalActions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  padding-top: 25px;
+  border-top: 1px solid var(--bordeClaro);
+  margin-top: 25px;
+  flex-wrap: wrap;
+}
+
+.saveButton,
+.updateButton {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.2);
+}
+
+.saveButton:hover,
+.updateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(184, 115, 51, 0.3);
+}
+
+.toggleUserButton {
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.disableUserButton {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
+.disableUserButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.enableUserButton {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+
+.enableUserButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.cancelButton {
+  background-color: var(--fondoClaro);
+  color: var(--textoPrincipal);
+  border: 2px solid var(--bordeClaro);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+  border-color: var(--colorPeligro);
+  color: var(--colorPeligro);
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+/* Paginación actualizada */
+.newPaginationContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding: 20px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--bordeClaro);
+  border-radius: 10px;
+  background: var(--fondoTarjeta);
+  color: var(--textoPrincipal);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px var(--sombraSuave);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--colorCobreAcento), var(--colorDoradoAcento));
+  color: white;
+  border-color: var(--colorCobreAcento);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--sombraMedia);
+}
+
+.paginationButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pageIndicator {
+  font-size: 14px;
+  color: var(--textoPrincipal);
+  font-weight: 600;
+  padding: 10px 18px;
+  background: var(--fondoClaro);
+  border-radius: 10px;
+  border: 1px solid var(--bordeClaro);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .containerPrincipal {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 15px 20px;
+  }
+
+  .panel {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .modalContent {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .roleButtons,
+  .buildingButtons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .userActions {
+    gap: 8px;
+  }
+
+  .viewButton,
+  .editButton,
+  .toggleButton,
+  .deleteButton {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+  }
+
+  .newPaginationContainer {
+    flex-direction: column;
+    gap: 15px;
+    max-width: 100%;
+  }
+
+  .paginationButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pageIndicator {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 10px 15px;
+  }
+
+  .panel {
+    padding: 15px;
+  }
+
+  .modalForm {
+    padding: 20px;
+  }
+
+  .modalHeader {
+    padding: 20px;
+  }
+
+  .modalHeader h2 {
+    font-size: 18px;
+  }
+
+  .input {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+
+  .roleButton,
+  .buildingButton {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes titleAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aparecerDesdeAbajo {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estados adicionales */
+.input:invalid:not(:placeholder-shown) {
+  border-color: var(--colorPeligro);
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.input:valid:not(:placeholder-shown) {
+  border-color: var(--colorActivo);
+}
+
+/* Accesibilidad */
+button:focus,
+.input:focus {
+  outline: 2px solid var(--colorCobreAcento);
+  outline-offset: 2px;
+}
+
+/* Estados de loading */
+.saveButton:disabled,
+.updateButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mejoras visuales adicionales */
+.userCard {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.usersGrid .userCard:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.usersGrid .userCard:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+.usersGrid .userCard:nth-child(3n) {
+  animation-delay: 0.3s;
+}

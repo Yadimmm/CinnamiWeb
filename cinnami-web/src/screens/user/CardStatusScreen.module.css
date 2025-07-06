@@ -1,0 +1,418 @@
+.containerPrincipal {
+  padding-left: 280px; /* Espacio para la barra lateral */
+}
+  /* Contenedor principal del dashboard */
+  .contenedorDashboard {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  /* Encabezado */
+  .encabezadoDashboard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+  
+  .tituloInicio {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--color-primario-oscuro);
+  }
+  
+  /* Contenedor principal con dos columnas */
+  .contenedorPrincipal {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+    align-items: start;
+  }
+  
+  /* Tarjeta principal */
+  .tarjetaPrincipal {
+    background: var(--fondo-tarjeta);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 8px 25px var(--sombra-suave);
+    border: 1px solid var(--borde-claro);
+    animation: aparecerDesdeAbajo 0.8s ease-out;
+
+  }
+  
+  /* Panel de acciones lateral */
+  .panelAcciones {
+    background: var(--fondo-tarjeta);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 8px 25px var(--sombra-suave);
+    border: 1px solid var(--borde-claro);
+    height: fit-content;
+  }
+  
+  .tituloSeccion {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--texto-principal);
+    margin-bottom: 25px;
+  }
+  
+  .estadoUsuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--fondo-claro);
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--borde-claro);
+    margin-bottom: 25px;
+  }
+  
+  .puntoEstado {
+    width: 8px;
+    height: 8px;
+    background: var(--color-exito);
+    border-radius: 50%;
+    animation: pulsar 2s infinite;
+  }
+  
+  .puntoEstadoBloqueado {
+    background: var(--color-peligro);
+  }
+  
+  .textoEstado {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-exito);
+  }
+  
+  .textoEstadoBloqueado {
+    color: var(--color-peligro);
+  }
+  
+  /* Tarjeta de acceso virtual */
+  .tarjetaVirtual {
+    background: linear-gradient(135deg, var(--color-dorado-acento), var(--color-cobre-acento));
+    border-radius: 16px;
+    padding: 30px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 12px 35px rgba(212, 165, 116, 0.4);
+    transition: all 0.3s ease;
+    animation: aparecerDesdeAbajo 0.8s ease-out;
+  }
+  
+  .tarjetaVirtual::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    transform: rotate(45deg);
+  }
+  
+  .tarjetaVirtual:hover {
+    transform: translateY(-5px) scale(1.02);
+  }
+  
+  .encabezadoTarjeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .infoEmpresa {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  .nombreEmpresa {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .lemaEmpresa {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .chipTarjeta {
+    width: 35px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    position: relative;
+  }
+  
+  .chipTarjeta::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+  }
+  
+  .infoUsuario {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .nombreUsuario {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .codigoUsuario {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    opacity: 0.9;
+    letter-spacing: 2px;
+  }
+  
+  .pieTarjeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .validaHasta {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .tipoAcceso {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  /* Información de la tarjeta */
+  .infoTarjeta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .campoInfo {
+    background: var(--fondo-claro);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--borde-claro);
+  }
+  
+  .etiquetaCampo {
+    font-size: 12px;
+    color: var(--texto-claro);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  
+  .valorCampo {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--texto-principal);
+  }
+  
+  .codigoQr {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+  }
+  
+  /* Switch para bloquear tarjeta */
+  .switchContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--fondo-claro);
+    border-radius: 12px;
+    border: 1px solid var(--borde-claro);
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-exito);
+    transition: .4s;
+    border-radius: 34px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  
+  .switch input:checked + .slider {
+    background-color: var(--color-peligro);
+  }
+  
+  .switch input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  
+  .switchLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto-principal);
+  }
+  
+  .switchDescription {
+    font-size: 12px;
+    color: var(--texto-claro);
+    margin-top: 4px;
+  }
+  
+  /* Botón de reportar pérdida */
+  .botonAccion {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .botonSecundario {
+    background: var(--color-peligro);
+    color: white;
+    border: 2px solid var(--borde-claro);
+  }
+  
+  .botonSecundario:hover {
+    background: #f99992;
+    border-color: var(--color-peligro);
+    color: rgb(150, 0, 0);
+    transform: translateY(-2px);
+  }
+  
+  /* Responsive para tablets */
+  @media (max-width: 1024px) {
+    .containerPrincipal {
+      padding-left: 0; /* Espacio para la barra lateral */
+    }
+    .body {
+      padding-left: 0;
+    }
+  
+    .contenedorDashboard {
+      padding-top: 120px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  
+    .contenedorPrincipal {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  
+    .panelAcciones {
+      order: 2;
+    }
+  }
+  
+  /* Responsive para móviles */
+  @media (max-width: 768px) {
+    .contenedorDashboard {
+      padding: 100px 15px 40px;
+    }
+  
+    .infoTarjeta {
+      grid-template-columns: 1fr;
+    }
+  
+    .tituloInicio {
+      font-size: 24px;
+    }
+  
+    .tarjetaPrincipal, .panelAcciones {
+      padding: 20px;
+    }
+  
+    .tarjetaVirtual {
+      padding: 25px;
+    }
+  }
+  
+  /* Animaciones */
+  @keyframes pulsar {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes flotar {
+    from {
+        transform: translate(0, 0);
+    }
+    to {
+        transform: translate(-30px, -30px);
+    }
+}
+
+@keyframes aparecerDesdeAbajo {
+  from {
+      opacity: 0;
+      transform: translateY(30px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}

@@ -1,0 +1,282 @@
+/* LoginScreen.module.css */
+
+
+.header {
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  padding: 15px 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.contenidoHeader {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.infoEmpresa {
+  font-size: 14px;
+  color: #2D1B1B;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.infoContacto {
+  font-size: 12px;
+  color: #9E9E9E;
+}
+.contenidoPrincipal {
+  padding: 120px 20px 80px;
+  display: flex;
+  justify-content: center;
+}
+
+
+
+.contenedorLogin {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;       /* centra horizontalmente sin afectar los márgenes del contenedor padre */
+  position: relative;   /* mantiene posición normal en el flujo */
+  z-index: 1;           /* opcional: para estar sobre otros elementos si es necesario */
+}
+
+
+
+
+.seccionLogoPrincipal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.logoPrincipal {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #D4A574, #B87333);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 24px;
+  color: white;
+  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.textoMarcaPrincipal {
+  display: flex;
+  flex-direction: column;
+}
+
+.nombreMarcaPrincipal {
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #cb7f47, #e2aa6d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+.lemaMarcaPrincipal {
+  font-size: 14px;
+  color: #9E9E9E;
+  font-weight: normal;
+}
+
+.tarjetaLogin {
+  background: linear-gradient(145deg, #F8F0E4, #F2E8D8);
+  border-radius: 24px;
+  padding: 50px 40px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.tituloLogin {
+  font-size: 32px;
+  font-weight: 300;
+  color: #B87333;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(184, 115, 51, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.formularioLogin {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.campoInput {
+  position: relative;
+}
+
+.inputLogin {
+  width: 100%;
+  padding: 16px 20px;
+  padding-left: 45px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #2D1B1B;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.inputLogin:focus {
+  border-color: #B87333;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(184, 115, 51, 0.1);
+  transform: translateY(-1px);
+}
+
+.iconoInput {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9E9E9E;
+  font-size: 16px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9E9E9E;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.togglePassword:hover {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.errorMessage {
+  color: #e74c3c;
+  font-size: 14px;
+  padding: 10px;
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  text-align: center;
+}
+
+.botonLogin {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #B87333, #D4A574);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.botonLogin:hover {
+  background: linear-gradient(135deg, #D4A574, #E6B885);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(212, 165, 116, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.enlaceOlvido {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.enlaceOlvidoA {
+  color: #B87333;
+  text-decoration: underline;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.usuariosPrueba {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  color: #2D1B1B;
+}
+
+.usuariosPruebaH3 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #B87333;
+}
+
+.usuariosPruebaP {
+  margin: 5px 0;
+}
+
+.footer {
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  padding: 20px 40px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08), 0 -1px 3px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.contenidoFooter {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.copyright {
+  font-size: 12px;
+  color: #9E9E9E;
+  margin-bottom: 5px;
+}
+
+.empresaFooter {
+  font-size: 14px;
+  color: #2D1B1B;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,346 @@
+.containerPrincipal {
+  padding-left: 280px; /* Espacio para la barra lateral */
+}
+/* Variables globales del proyecto */
+:root {
+  --colorPrimarioOscuro: #2D1B1B;
+  --colorCafePrincipal: #5D4037;
+  --colorDoradoAcento: #D4A574;
+  --colorCobreAcento: #B87333;
+  --fondoClaro: #F8F6F0;
+  --fondoTarjeta: #FFFFFF;
+  --textoPrincipal: #2D1B1B;
+  --textoSecundario: #6B5B73;
+  --textoClaro: #9E9E9E;
+  --colorExito: #4CAF50;
+  --colorAdvertencia: #FF9800;
+  --colorPeligro: #F44336;
+  --bordeClaro: #E0E0E0;
+  --sombraSuave: rgba(0, 0, 0, 0.08);
+  --sombraMedia: rgba(0, 0, 0, 0.15);
+}
+
+/* Reseteo básico de estilos */
+
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--fondoClaro) 0%, #FFF8F0 100%);
+  padding: 20px 16px;
+  font-family: 'Arial', sans-serif;
+  color: var(--textoPrincipal);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--fondoTarjeta);
+  color: var(--textoSecundario);
+  border: 1px solid var(--bordeClaro);
+}
+
+.filterButton.active {
+  background: var(--colorDoradoAcento);
+  color: white;
+  border-color: var(--colorDoradoAcento);
+}
+
+.filterButton:hover {
+  background: var(--colorCobreAcento);
+  color: white;
+  border-color: var(--colorCobreAcento);
+}
+
+.accessList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 80px;
+}
+
+.accessItem {
+  background: var(--fondoTarjeta);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px var(--sombraSuave);
+  border: 1px solid var(--bordeClaro);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.accessItem:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--sombraMedia);
+}
+
+.accessItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--colorExito);
+  border-radius: 2px 0 0 2px;
+}
+
+.accessItem.failed::before {
+  background: var(--colorPeligro);
+}
+
+.accessContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.accessInfo {
+  flex: 1;
+}
+
+.locationAccess {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--textoPrincipal);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.locationIcon {
+  width: 40px;
+  height: 40px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+
+.failed .locationIcon {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.dateTimeAccess {
+  font-size: 12px;
+  color: var(--textoSecundario);
+  margin-bottom: 8px;
+}
+
+.accessStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.statusSuccess {
+  color: var(--colorExito);
+}
+
+.statusFailed {
+  color: var(--colorPeligro);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.statusSuccess .statusDot {
+  background: var(--colorExito);
+}
+
+.statusFailed .statusDot {
+  background: var(--colorPeligro);
+}
+
+.additionalDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accessArrow {
+  font-size: 18px;
+  color: var(--textoClaro);
+  opacity: 0.6;
+}
+
+/* Nuevo paginador estilo - reemplaza el anterior */
+.newPaginationContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding: 20px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--bordeClaro);
+  border-radius: 8px;
+  background: var(--fondoTarjeta);
+  color: var(--textoSecundario);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px var(--sombraSuave);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--colorCobreAcento);
+  color: white;
+  border-color: var(--colorCobreAcento);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px var(--sombraMedia);
+}
+
+.paginationButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pageIndicator {
+  font-size: 14px;
+  color: var(--textoSecundario);
+  font-weight: 500;
+  padding: 8px 16px;
+  background: var(--fondoClaro);
+  border-radius: 6px;
+  border: 1px solid var(--bordeClaro);
+}
+
+/* Mantener los estilos antiguos para compatibilidad pero ocultarlos */
+.navigationContainer {
+  display: none;
+}
+
+.navButton {
+  display: none;
+}
+
+.pageButton {
+  display: none;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--textoClaro);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyMessage {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.emptySubMessage {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.accessItem {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+@media (max-width: 1024px) {
+  .containerPrincipal {
+    padding-left: 0; /* Espacio para la barra lateral */
+  }
+}
+
+/* Estados responsive adicionales */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .accessContent {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .additionalDetails {
+    justify-content: flex-end;
+  }
+
+  .newPaginationContainer {
+    flex-direction: column;
+    gap: 16px;
+    max-width: 100%;
+  }
+  
+  .paginationButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pageIndicator {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+}

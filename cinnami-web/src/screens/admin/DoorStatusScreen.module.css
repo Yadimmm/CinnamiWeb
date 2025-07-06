@@ -1,0 +1,262 @@
+/* Variables globales del proyecto */
+:root {
+    --color-primario-oscuro: #2D1B1B;
+    --color-cafe-principal: #5D4037;
+    --color-dorado-acento: #D4A574;
+    --color-cobre-acento: #B87333;
+    --fondo-claro: #F8F6F0;
+    --fondo-tarjeta: #FFFFFF;
+    --texto-principal: #2D1B1B;
+    --texto-secundario: #6B5B73;
+    --texto-claro: #9E9E9E;
+    --color-exito: #4CAF50;
+    --color-advertencia: #FF9800;
+    --color-peligro: #F44336;
+    --borde-claro: #E0E0E0;
+    --sombra-suave: rgba(0, 0, 0, 0.08);
+    --sombra-media: rgba(0, 0, 0, 0.15);
+  }
+  .containerPrincipal {
+    padding-left: 280px; /* Espacio para la barra lateral */
+  }
+  
+  /* Sección principal (hero) */
+  .seccionPrincipal {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 60px 0;
+    background: linear-gradient(135deg, var(--fondo-claro) 0%, #FFF8F0 100%);
+  }
+  
+  .contenedorPrincipal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+  
+  /* Contenido principal */
+  .contenidoPrincipal {
+    animation: aparecerDesdeAbajo 0.8s ease-out;
+  }
+  
+  /* Panel de control de puerta */
+  .panelPuerta {
+    background: var(--fondo-tarjeta);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 10px 40px var(--sombra-suave);
+    border: 1px solid var(--borde-claro);
+  }
+  
+  .encabezadoPuerta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+  
+  .iconoPuerta {
+    font-size: 24px;
+    color: var(--color-cobre-acento);
+  }
+  
+  .tituloPuerta {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--texto-principal);
+  }
+  
+  .estadoPuerta {
+    text-align: center;
+  }
+  
+  .tituloEstado {
+    font-size: 16px;
+    color: var(--texto-secundario);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  
+  .indicadorEstadoPuerta {
+    margin-bottom: 25px;
+  }
+  
+  .textoEstadoPuerta {
+    font-size: 32px;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 15px;
+    display: inline-block;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+  }
+  
+  .textoEstadoPuerta.cerrada {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--color-exito);
+    border: 2px solid rgba(76, 175, 80, 0.3);
+  }
+  
+  .textoEstadoPuerta.abierta {
+    background: rgba(255, 152, 0, 0.1);
+    color: var(--color-advertencia);
+    border: 2px solid rgba(255, 152, 0, 0.3);
+  }
+  
+  .botonAbrirPuerta {
+    background: linear-gradient(135deg, #E57373, #F44336);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+  }
+  
+  .botonAbrirPuerta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(244, 67, 54, 0.4);
+  }
+  
+  .botonAbrirPuerta:active {
+    transform: translateY(0);
+  }
+  
+  .botonAbrirPuerta.botonCerrar {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+  }
+  
+  .botonAbrirPuerta.botonCerrar:hover {
+    box-shadow: 0 12px 28px rgba(76, 175, 80, 0.4);
+  }
+  
+  /* Panel de notificaciones */
+  .panelNotificaciones {
+    background: var(--fondo-tarjeta);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 10px 40px var(--sombra-suave);
+    border: 1px solid var(--borde-claro);
+    animation: aparecerDesdeAbajo 0.8s ease-out;
+  }
+  
+  .encabezadoNotificacion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .tituloNotificacion {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--texto-principal);
+  }
+  
+  .toggleNotificacion {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+  }
+  
+  .toggleNotificacion input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .sliderToggle {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+  }
+  
+  .sliderToggle:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  .toggleNotificacion input:checked + .sliderToggle {
+    background: linear-gradient(135deg, var(--color-dorado-acento), var(--color-cobre-acento));
+  }
+  
+  .toggleNotificacion input:checked + .sliderToggle:before {
+    transform: translateX(26px);
+  }
+  
+  .descripcionNotificacion {
+    font-size: 14px;
+    color: var(--texto-secundario);
+    line-height: 1.5;
+  }
+  
+  /* Responsive para tablets */
+  @media (max-width: 1024px) {
+    .containerPrincipal {
+      padding-left: 0; /* Espacio para la barra lateral */
+    }
+    
+    .seccionPrincipal {
+      padding-top: 120px;
+    }
+  
+    .contenedorPrincipal {
+      padding: 0 20px;
+    }
+  }
+  
+  /* Responsive para móviles */
+  @media (max-width: 768px) {
+    .contenedorPrincipal {
+      grid-template-columns: 1fr;
+      gap: 30px;
+      text-align: center;
+    }
+  
+    .panelPuerta {
+      padding: 20px;
+    }
+  
+    .panelNotificaciones {
+      padding: 20px;
+    }
+  
+    .seccionPrincipal {
+      padding-top: 100px;
+    }
+  }
+  
+  /* Animaciones CSS */
+  @keyframes aparecerDesdeAbajo {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
