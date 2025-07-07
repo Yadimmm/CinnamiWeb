@@ -21,8 +21,86 @@ const initialFormData = {
   role: 'Docente',
   names: '',
   surnames: '',
-  uid: '', // _id de la tarjeta seleccionada
+  uid: '',
 };
+
+// MODAL de alerta de cambios
+function ChangesAlert({ oldData, newData, allCards, onClose }) {
+  const prettyLabel = {
+    username: 'Usuario',
+    email: 'Email',
+    password: 'Contraseña',
+    role: 'Rol',
+    firstName: 'Nombre(s)',
+    lastName: 'Apellido(s)',
+    cardId: 'Tarjeta'
+  };
+  const changedFields = [];
+  Object.keys(newData).forEach(key => {
+    if (key === "password") {
+      if (newData[key]) {
+        changedFields.push(
+          <tr key={key}>
+            <td>{prettyLabel[key]}</td>
+            <td>-</td>
+            <td>******</td>
+          </tr>
+        );
+      }
+    } else if (key === "cardId") {
+      if ((oldData.cardId || '') !== (newData.cardId || '')) {
+        const oldCard = allCards.find(c => c._id === oldData.cardId);
+        const newCard = allCards.find(c => c._id === newData.cardId);
+        changedFields.push(
+          <tr key={key}>
+            <td>{prettyLabel[key]}</td>
+            <td>{oldCard ? oldCard.uid : '-'}</td>
+            <td>{newCard ? newCard.uid : '-'}</td>
+          </tr>
+        );
+      }
+    } else {
+      if ((oldData[key] || '') !== (newData[key] || '')) {
+        changedFields.push(
+          <tr key={key}>
+            <td>{prettyLabel[key] || key}</td>
+            <td>{oldData[key] || '-'}</td>
+            <td>{newData[key] || '-'}</td>
+          </tr>
+        );
+      }
+    }
+  });
+  if (changedFields.length === 0) {
+    changedFields.push(
+      <tr key="nochange">
+        <td colSpan={3} style={{ color: '#999', fontStyle: 'italic', padding: 10 }}>No hubo cambios.</td>
+      </tr>
+    );
+  }
+
+  return (
+    <div className={styles.changesModalOverlay}>
+      <div className={styles.changesModalContent}>
+        <h3><span className={styles.iconCheck}>✔️</span> Usuario actualizado</h3>
+        <div style={{ color: '#695c5c', marginBottom: '0.6rem', fontSize: '1em' }}>
+          Estos campos cambiaron:
+        </div>
+        <table className={styles.changesTable}>
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Antes</th>
+              <th>Después</th>
+            </tr>
+          </thead>
+          <tbody>{changedFields}</tbody>
+        </table>
+        <button className={styles.closeButton} onClick={onClose}>Cerrar</button>
+      </div>
+    </div>
+  );
+}
 
 export default function ManageUsersScreen({ onLogoutClick }) {
   const [users, setUsers] = useState([]);
@@ -36,9 +114,11 @@ export default function ManageUsersScreen({ onLogoutClick }) {
   const [formData, setFormData] = useState(initialFormData);
   const [editingUser, setEditingUser] = useState(null);
   const [availableCards, setAvailableCards] = useState([]);
+  const [allCards, setAllCards] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [changesAlert, setChangesAlert] = useState(null);
 
-  // FUNCION CENTRAL PARA TRAER USUARIOS REALES
+  // --- Carga usuarios y tarjetas
   const loadUsers = () => {
     fetch('http://localhost:3000/api/auth/all-users', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -54,11 +134,21 @@ export default function ManageUsersScreen({ onLogoutClick }) {
       });
   };
 
+  const loadAllCards = () => {
+    fetch('http://localhost:3000/api/auth/cards', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(res => res.json())
+      .then(data => setAllCards(data.cards || []))
+      .catch(() => setAllCards([]));
+  };
+
   useEffect(() => {
     loadUsers();
+    loadAllCards();
   }, []);
 
-  // Paginación
+  // Paginación y filtros
   const getUsersPerPage = () => window.innerWidth >= 1400 ? 9 : window.innerWidth >= 1024 ? 6 : 5;
   const [usersPerPage, setUsersPerPage] = useState(getUsersPerPage());
   useEffect(() => {
@@ -73,7 +163,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
   const startIndex = (currentPage - 1) * usersPerPage;
   const currentUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage);
 
-  // Filtrar usuarios
   useEffect(() => {
     const filtered = users.filter(user =>
       user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,7 +174,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     setCurrentPage(1);
   }, [users, searchTerm]);
 
-  // Cargar tarjetas disponibles SOLO cuando abres el modal de registro/edición
+  // Cargar tarjetas disponibles SOLO cuando abres el modal
   useEffect(() => {
     if (showModal) {
       fetch('http://localhost:3000/api/auth/cards/available', {
@@ -104,19 +193,27 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   const handleRoleSelect = (role) => setFormData(prev => ({ ...prev, role }));
 
-  // Validación simple
+  // Validación: SIEMPRE contraseña requerida en editar y crear
   const validateForm = () => {
     if (!formData.username.trim()) return alert('Por favor ingrese un nombre de usuario');
     if (!formData.email.trim()) return alert('Por favor ingrese un email válido');
     if (!formData.names.trim()) return alert('Por favor ingrese el nombre(s)');
     if (!formData.surnames.trim()) return alert('Por favor ingrese los apellidos');
     if (!formData.uid) return alert('Por favor selecciona una tarjeta');
-    if (modalType === 'add' && formData.password !== formData.confirmPassword) return alert('Las contraseñas no coinciden');
-    if (modalType === 'add' && !formData.password.trim()) return alert('Por favor ingrese una contraseña');
+    if (!formData.password.trim() || !formData.confirmPassword.trim())
+      return alert('Debe ingresar y confirmar la contraseña');
+    if (formData.password !== formData.confirmPassword)
+      return alert('Las contraseñas no coinciden');
     return true;
   };
 
-  // SUBMIT: Crear usuario
+  // Obtener UID desde _id
+  function getCardUID(cardId) {
+    const card = allCards.find(c => c._id === cardId);
+    return card ? card.uid : (cardId || '-');
+  }
+
+  // --------- FUNCIÓN ACTUALIZADA ---------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -142,17 +239,119 @@ export default function ManageUsersScreen({ onLogoutClick }) {
         });
         const data = await res.json();
         if (res.ok) {
+          // Asignar tarjeta al usuario
+          const userId = data.user._id || data.user.id;
+          const cardId = data.user.cardId;
+          if (userId && cardId) {
+            await fetch(`http://localhost:3000/api/auth/cards/${cardId}/assign`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ userId })
+            });
+          }
           closeModal();
-          loadUsers(); // Vuelve a cargar la lista real
+          loadUsers();
+          loadAllCards();
         } else {
           alert(data.message || 'No se pudo crear el usuario');
         }
       } catch (err) {
         alert('Error al crear usuario');
       }
+    } else if (modalType === 'edit' && editingUser) {
+      try {
+        const userId = editingUser._id || editingUser.id;
+        // NO mandes la contraseña aquí
+        const userPayload = {
+          username: formData.username,
+          email: formData.email,
+          role: formData.role.toLowerCase(),
+          firstName: formData.names,
+          lastName: formData.surnames,
+          cardId: formData.uid
+        };
+
+        // 1. Actualiza los datos normales
+        const res = await fetch(`http://localhost:3000/api/auth/${userId}/update`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(userPayload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // 2. Solo si la contraseña no está vacía, mándala a /change-password
+          if (formData.password.trim()) {
+            const passRes = await fetch(`http://localhost:3000/api/auth/${userId}/change-password`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ newPassword: formData.password })
+            });
+            if (!passRes.ok) {
+              const passErr = await passRes.json();
+              alert(passErr.message || 'No se pudo actualizar la contraseña');
+              return;
+            }
+          }
+
+          // ==== CAMBIO IMPORTANTE ====
+          // 1. Desasigna la tarjeta anterior si cambia
+          if (editingUser.cardId && editingUser.cardId !== formData.uid) {
+            await fetch(`http://localhost:3000/api/auth/cards/${editingUser.cardId}/assign`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ userId: null })
+            });
+          }
+          // 2. Asigna la nueva tarjeta si cambia
+          if (formData.uid && editingUser.cardId !== formData.uid) {
+            await fetch(`http://localhost:3000/api/auth/cards/${formData.uid}/assign`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ userId })
+            });
+          }
+          // ==== FIN DEL CAMBIO ====
+
+          closeModal();
+          loadUsers();
+          loadAllCards();
+          setChangesAlert({
+            oldData: editingUser,
+            newData: {
+              username: formData.username,
+              email: formData.email,
+              password: formData.password ? '******' : '',
+              role: formData.role,
+              firstName: formData.names,
+              lastName: formData.surnames,
+              cardId: formData.uid
+            }
+          });
+        } else {
+          alert(data.message || 'No se pudo actualizar el usuario');
+        }
+      } catch (err) {
+        alert('Error al actualizar usuario');
+      }
     }
-    // Si implementas edición, aquí iría el fetch correspondiente
   };
+  // ---------------------------------------
 
   const openAddModal = () => {
     setModalType('add');
@@ -169,7 +368,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     setShowConfirmPassword(false);
   };
 
-  // Modal detalle usuario
   const closeUserDetailModal = () => setSelectedUser(null);
 
   // Habilitar/deshabilitar usuario
@@ -189,7 +387,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     }
   };
 
-  // Editar usuario (ejemplo simple: llena el form y abre modal)
+  // EDITAR usuario
   const handleEditUser = (user) => {
     setModalType('edit');
     setEditingUser(user);
@@ -210,6 +408,18 @@ export default function ManageUsersScreen({ onLogoutClick }) {
   // Paginación
   const handlePreviousPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+
+  // ALERTA DE CAMBIOS
+  if (changesAlert) {
+    return (
+      <ChangesAlert
+        oldData={changesAlert.oldData}
+        newData={changesAlert.newData}
+        allCards={allCards}
+        onClose={() => setChangesAlert(null)}
+      />
+    );
+  }
 
   return (
     <div className={styles.containerPrincipal}>
@@ -252,9 +462,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                       <p>Rol: <span className={`${styles.roleBadge} ${styles[user.role?.toLowerCase()]}`}>{user.role}</span></p>
                       <p>Estado: <span className={user.status ? styles.estadoBadge + ' ' + styles.activo : styles.estadoBadge + ' ' + styles.inactivo}>{user.status ? "Activo" : "Inactivo"}</span></p>
                     </div>
-                  </div>
-                  <div className={styles.userActions}>
-                    {/* Opciones rápidas si quieres */}
                   </div>
                 </div>
               ))}
@@ -335,7 +542,8 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                       placeholder="Contraseña"
                       value={formData.password}
                       onChange={handleInputChange}
-                      required={modalType === 'add'}
+                      required
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -354,6 +562,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       required
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -375,6 +584,12 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                     {availableCards.map(card =>
                       <option key={card._id} value={card._id}>{card.uid}</option>
                     )}
+                    {/* Mostrar también la tarjeta ya asignada si está editando */}
+                    {modalType === "edit" && formData.uid && !availableCards.some(card => card._id === formData.uid) && (
+                      <option value={formData.uid}>
+                        {getCardUID(formData.uid)}
+                      </option>
+                    )}
                   </select>
                   {/* Selector de rol */}
                   <div className={styles.roleSelector} style={{ marginTop: 18 }}>
@@ -394,7 +609,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                   </div>
                 </div>
               </div>
-
               <div className={styles.modalActions}>
                 <button type="submit" className={styles.saveButton}>
                   <FaSave style={{ marginRight: '6px' }} />
@@ -410,7 +624,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
         </div>
       )}
 
-      {/* Modal detalle de usuario al hacer click en tarjeta */}
+      {/* Modal detalle de usuario */}
       {selectedUser && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -429,7 +643,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                   <p><b>Email:</b> {selectedUser.email}</p>
                   <p><b>Rol:</b> <span className={`${styles.roleBadge} ${styles[selectedUser.role?.toLowerCase()]}`}>{selectedUser.role}</span></p>
                   <p><b>Estado:</b> <span className={selectedUser.status ? styles.estadoBadge + ' ' + styles.activo : styles.estadoBadge + ' ' + styles.inactivo}>{selectedUser.status ? "Activo" : "Inactivo"}</span></p>
-                  <p><b>Tarjeta asignada:</b> {selectedUser.cardId || '-'}</p>
+                  <p><b>Tarjeta asignada:</b> {getCardUID(selectedUser.cardId)}</p>
                 </div>
               </div>
               <div className={styles.modalActions}>
@@ -450,7 +664,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

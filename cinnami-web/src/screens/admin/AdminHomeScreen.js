@@ -3,19 +3,33 @@ import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import styles from './AdminHomeScreen.module.css';
 import { Eye, User, Mail, CreditCard, DoorClosed, UserCheck, X } from 'lucide-react';
 import ModalLogout from '../../components/logout/ModalLogout';
-
-// Importar imágenes de usuarios
 import anaGomezFoto from "../../assets/users/anagomez.jpg";
 import luisTorresFoto from "../../assets/users/luistorres.jpg";
 import mariaLopezFoto from "../../assets/users/marialopez.png";
 import javierVazquezFoto from "../../assets/users/userfoto2.png";
 
+// ---- Formateador avanzado ----
+function formatDate(dateString) {
+  if (!dateString) return 'Nunca';
+  const now = new Date();
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Nunca';
+
+  const isToday = now.toDateString() === date.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = yesterday.toDateString() === date.toDateString();
+  const hora = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  if (isToday) return `Hoy a las ${hora}`;
+  if (isYesterday) return `Ayer a las ${hora}`;
+  return date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' - ' + hora;
+}
+
 const AdminHomeScreen = () => {
   const [alertaVisible, setAlertaVisible] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // NUEVO: estado para mostrar modal de logout
   const [showLogout, setShowLogout] = useState(false);
 
   const cerrarAlerta = () => setAlertaVisible(false);
@@ -30,14 +44,38 @@ const AdminHomeScreen = () => {
     setSelectedUser(null);
   };
 
-  // NUEVO: función para cerrar sesión
   const handleLogout = () => {
     localStorage.removeItem('role');
     localStorage.removeItem('token');
-    window.location.href = '/'; // O usa navigate('/') si usas react-router v6+
+    localStorage.removeItem('user');
+    window.location.href = '/';
   };
 
-  // Datos de accesos recientes actualizados con imágenes específicas para cada usuario
+  // --- LEER DATOS DEL USUARIO AUTENTICADO ---
+  let userProfile = {
+    firstName: '',
+    lastName: '',
+    role: '',
+    email: '',
+    lastLogin: '',
+    foto: javierVazquezFoto
+  };
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      userProfile = {
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        role: user.role === 'admin' ? 'Administrador' : 'Docente',
+        email: user.email || '',
+        lastLogin: formatDate(user.lastLogin),
+        foto: javierVazquezFoto // Si algún día agregas foto personalizada: user.foto || javierVazquezFoto
+      };
+    }
+  } catch { /* Si hay error no pasa nada */ }
+
+  // Accesos recientes (esto es DEMO)
   const accesosRecientes = [
     {
       id: '1',
@@ -92,28 +130,16 @@ const AdminHomeScreen = () => {
     }
   ];
 
-  // Datos del administrador
-  const userProfile = {
-    name: 'Juan Pérez',
-    role: 'Administrador',
-    email: 'juan.perez@ejemplo.com',
-    lastAccess: '25/06/2025 - 08:10 AM',
-    foto: javierVazquezFoto
-  };
-
   return (
     <>
       <div className={styles.containerPrincipal}>
-        {/* Menú de navegación con soporte para modal logout */}
         <NavigationMenu
-          userType="admin"
+          userType={userProfile.role === 'Administrador' ? "admin" : "docente"}
           onLogoutClick={() => setShowLogout(true)}
         />
 
-        {/* Dashboard principal */}
         <div className={styles.dashboardContainer}>
           <main className={styles.contenedorDashboard}>
-            {/* Alerta de puerta abierta */}
             {alertaVisible && (
               <div className={styles.alertaPuerta}>
                 <span className={styles.textoAlerta}>
@@ -128,33 +154,41 @@ const AdminHomeScreen = () => {
               </div>
             )}
 
-            {/* Perfil personalizado del usuario */}
+            {/* PERFIL del USUARIO conectado */}
             <div className={styles.perfilUsuario}>
               <div className={styles.avatarPerfil}>
                 <img
                   className={styles.avatarPerfil}
                   src={userProfile.foto}
-                  alt={`${userProfile.name} - usuario administrador`}
+                  alt={`${userProfile.firstName} ${userProfile.lastName} - usuario`}
                 />
               </div>
               <div className={styles.informacionPerfil}>
                 <div className={styles.encabezadoPerfil}>
-                  <h1>¡Hola, {userProfile.name}!</h1>
-                  <span className={styles.badgeAdministrador}>ADMINISTRADOR</span>
+                  <h1>
+                    ¡Hola, {userProfile.firstName} {userProfile.lastName}!
+                  </h1>
+                  <span className={
+                    userProfile.role === 'Administrador'
+                      ? styles.badgeAdministrador
+                      : styles.badgeDocente
+                  }>
+                    {userProfile.role.toUpperCase()}
+                  </span>
                 </div>
                 <div className={styles.detallesUsuario}>
                   <p>Bienvenido a tu panel de control</p>
                   <p className={styles.textoBienvenida}>{userProfile.email}</p>
-                  <p className={styles.textoBienvenida}>Último acceso: {userProfile.lastAccess}</p>
+                  <p className={styles.textoBienvenida}>
+                    Último acceso: {userProfile.lastLogin}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Grid principal */}
             <div className={styles.gridDashboard}>
-              {/* Contenedor unificado para tarjetas de personas y estado */}
               <div className={styles.contenedorTarjetasUnificado}>
-                {/* Tarjeta de personas ingresadas */}
                 <div className={styles.tarjetaPersonas}>
                   <h2 className={styles.tituloPersonas}>Personas ingresadas</h2>
                   <span className={styles.numeroPersonas}>1245</span>
@@ -162,15 +196,12 @@ const AdminHomeScreen = () => {
                     Total de accesos
                   </span>
                 </div>
-                {/* Tarjeta de estado de puerta */}
                 <div className={styles.tarjetaEstado}>
                   <h2 className={styles.tituloEstado}>Estado de puerta</h2>
                   <span className={styles.estadoPuerta}>Abierta</span>
                   <span className={styles.etiquetaEstado}>Estado actual</span>
                 </div>
               </div>
-
-              {/* Tarjeta de accesos recientes */}
               <div className={styles.tarjetaAccesos}>
                 <div className={styles.encabezadoAccesos}>
                   <h2 className={styles.tituloAccesos}>
@@ -285,7 +316,6 @@ const AdminHomeScreen = () => {
         </div>
       )}
 
-      {/* MODAL LOGOUT */}
       <ModalLogout
         visible={showLogout}
         onCancel={() => setShowLogout(false)}

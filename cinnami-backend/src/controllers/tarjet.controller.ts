@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
-import { Card } from '../models/Card'; // Ajusta la ruta según tu estructura
+import { Card } from '../models/Card';
 import { Types } from 'mongoose';
+import { User } from '../models/User';
 
-// Crear nueva tarjeta (solo UID)
+//Crear nueva tarjeta (solo UID)
 export const createCard = async (req: Request, res: Response) => {
   try {
     const { uid } = req.body;
 
+    // Validar que se envió el UID
     if (!uid) {
       return res.status(400).json({
         message: 'El UID de la tarjeta es requerido'
@@ -64,7 +66,7 @@ export const getAllCards = async (req: Request, res: Response) => {
   }
 };
 
-// **NUEVA: Obtener tarjetas disponibles para asignar**
+///api/cards/available - Obtener tarjetas disponibles para asignar
 export const getAvailableCards = async (req: Request, res: Response) => {
   try {
     const availableCards = await Card.find({
@@ -84,7 +86,7 @@ export const getAvailableCards = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener tarjeta específica por ID
+// GET /api/cards/:id - Obtener tarjeta específica
 export const getCardById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -116,7 +118,7 @@ export const getCardById = async (req: Request, res: Response) => {
   }
 };
 
-// Editar UID de tarjeta
+// PUT /api/cards/:id - Editar UID de tarjeta
 export const updateCardUID = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -172,7 +174,7 @@ export const updateCardUID = async (req: Request, res: Response) => {
   }
 };
 
-// Deshabilitar tarjeta
+//Deshabilitar tarjeta
 export const disableCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -244,8 +246,9 @@ export const enableCard = async (req: Request, res: Response) => {
   }
 };
 
-// Eliminar tarjeta
-export const deleteCard = async (req: Request, resp: Response) => {
+//ELIMINA TARJETAS
+export const deleteCard = async (req: Request, resp: Response) =>{
+
   try {
     const { id } = req.params;
 
@@ -273,18 +276,22 @@ export const deleteCard = async (req: Request, resp: Response) => {
     console.error('Error ocurrido en deleteCard:', error);
     resp.status(500).json({ message: 'Error al eliminar tarjeta', error });
   }
-};
+}
 
-// Asignar tarjeta a usuario
+// ASIGNAR TARJETA (CAMBIO AQUÍ)
+/**
+ * Este endpoint ahora permite asignar o DESASIGNAR una tarjeta.
+ * Si el frontend envía { userId: null }, la tarjeta se desasigna.
+ */
 export const assignCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
 
-    // Validar ObjectIds
-    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(userId)) {
+    // Validar ObjectId de la tarjeta
+    if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
-        message: 'ID de tarjeta o usuario inválido'
+        message: 'ID de tarjeta inválido'
       });
     }
 
@@ -296,15 +303,27 @@ export const assignCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Verificar que la tarjeta esté disponible
-    if (!(card.state === true && card.assignedTo == null)) {
+    // --- CAMBIO: Permite desasignar ---
+    if (!userId) {
+      card.assignedTo = null;
+      card.state = true;
+      await card.save();
+      return res.status(200).json({
+        message: 'Tarjeta desasignada exitosamente',
+        card
+      });
+    }
+
+    // Validar ObjectId del usuario si userId está presente
+    if (!Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: 'La tarjeta no está disponible para asignación'
+        message: 'ID de usuario inválido'
       });
     }
 
     // Asignar tarjeta
     card.assignedTo = new Types.ObjectId(userId);
+    card.state = true; // Si usas "false" para tarjetas ocupadas, cámbialo aquí según tu lógica
     const updatedCard = await card.save();
 
     res.status(200).json({
@@ -314,11 +333,11 @@ export const assignCard = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Error ocurrido en assignCard:', error);
-    res.status(500).json({ message: 'Error al asignar tarjeta', error });
+    res.status(500).json({ message: 'Error al asignar/desasignar tarjeta', error });
   }
 };
 
-// Desasignar tarjeta
+//Desasignar tarjeta (puedes eliminar este endpoint si ya no lo necesitas)
 export const unassignCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -339,7 +358,7 @@ export const unassignCard = async (req: Request, res: Response) => {
     }
 
     // Desasignar tarjeta
-    card.assignedTo = undefined;
+    card.assignedTo = null;
     const updatedCard = await card.save();
 
     res.status(200).json({
@@ -350,5 +369,29 @@ export const unassignCard = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error ocurrido en unassignCard:', error);
     res.status(500).json({ message: 'Error al desasignar tarjeta', error });
+  }
+};
+
+// Desasignar tarjeta desde el usuario
+export const releaseUserCard = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    if (user.cardId) {
+      // Libera la tarjeta en la colección de tarjetas
+      const card = await Card.findOne({ uid: user.cardId });
+      if (card) {
+        card.assignedTo = null;
+        await card.save();
+      }
+      // Libera la tarjeta en el usuario (sin validación de Mongoose)
+      await User.updateOne({ _id: userId }, { $set: { cardId: null } });
+    }
+
+    res.status(200).json({ message: 'Tarjeta liberada correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al liberar tarjeta', error });
   }
 };

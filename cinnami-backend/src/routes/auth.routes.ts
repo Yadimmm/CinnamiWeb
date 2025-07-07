@@ -4,45 +4,43 @@ import {
   createUser, 
   refreshToken, 
   logout,
-  getAllUsers
-} from "../controllers/auth.controller"; 
-
-import { 
-  updateUser, disableUser, enableUser, changePassword 
-} from "../controllers/user.controller"; // <- Te faltaba este import
-
+  getAllUsers 
+} from "../controllers/auth.controller";
 import { verifyToken, isAdmin, isSelfOrAdmin } from "../middlewares/auth";
 
-import { 
-  createCard, deleteCard, disableCard, enableCard, getAllCards, 
-  getAvailableCards // <-- Ya lo tienes bien
-} from "../controllers/tarjet.controller";
+import { updateUser, disableUser, enableUser, changePassword, updateUserCardId } from "../controllers/user.controller";
+import { assignCard, createCard, deleteCard, disableCard, enableCard, getAllCards, getAvailableCards, unassignCard, releaseUserCard } from "../controllers/tarjet.controller";
 
 const router = Router();
 
 // rutas públicas
 router.post('/login', login);
 router.post('/refresh-token', refreshToken);
-router.post('/users', createUser);
+router.post('/users', createUser); // registro de nuevos usuarios
 
-// rutas protegidas
-router.post('/logout', verifyToken, logout);
+// rutas protegidas (requieren token válido)
+router.post('/logout', verifyToken, logout); // cerrar sesión
 router.get('/all-users', verifyToken, getAllUsers);
 
-router.put('/:id/update', updateUser);
-router.patch('/:id/disable', disableUser);
-router.patch('/:id/enable', isAdmin, enableUser);
-router.post('/:id/change-password', isSelfOrAdmin, changePassword);
+router.put('/:id/update', updateUser); // Editar usuario (sin contraseña)
+router.patch('/:id/disable', disableUser); // Deshabilitar usuario
+router.patch('/:id/enable', isAdmin, enableUser);  // Habilitar usuario (opcional)
+router.put('/:id/change-password', changePassword);   // Cambio de contraseña
 
-// tarjetas
-router.post('/addCard', createCard);
-router.get('/cards', verifyToken, getAllCards);
+//tarjetas 
 
-// **RUTA DISPONIBLES**
-router.get('/cards/available', verifyToken, getAvailableCards);
+router.post('/addCard', createCard); //crear tarjeta
+router.get('/cards', verifyToken, getAllCards); // Obtener todas las tarjetas
+router.put('/cards/:id/disable', disableCard); // Deshabilitar tarjeta
+router.put('/cards/:id/enable', enableCard); // Habilitar tarjeta
+router.delete('/cards/:id/delete', deleteCard); // Eliminar tarjeta
+router.get('/cards/available', getAvailableCards); // Obtener tarjetas disponibles para asignar
 
-router.put('/cards/:id/disable', disableCard);
-router.put('/cards/:id/enable', enableCard);
-router.delete('/cards/:id/delete', deleteCard);
+// ¡AQUÍ SE AGREGA verifyToken!
+router.put('/cards/:id/assign', verifyToken, assignCard); // Asignar tarjeta a un usuario
+
+router.patch('/users/:id/card', updateUserCardId); // Actualizar cardId del usuario
+router.put('/cards/:id/unassign', unassignCard); // Desasignar tarjeta de un usuario
+router.patch('/users/:id/release-card', releaseUserCard); // Liberar tarjeta de un usuario
 
 export default router;

@@ -5,7 +5,7 @@ import { CiMail } from "react-icons/ci";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { LuEyeOff } from "react-icons/lu";
-import { login } from '../services/apiService';
+import { login, getUserProfile } from '../services/apiService'; // asegúrate de importar getUserProfile
 
 export default function LoginScreen({ setRole, navigate }) {
   const [email, setEmail] = useState('');
@@ -22,26 +22,42 @@ export default function LoginScreen({ setRole, navigate }) {
     try {
       const result = await login(email, password);
 
-      // Según el backend, role puede estar en result.role o result.user.role
+      // Obtiene el rol y el usuario
       const userRole = result.role || (result.user && result.user.role);
 
       if (userRole) {
         setRole(userRole);
-        localStorage.setItem('role', userRole); // Persistencia
-
-        // Guarda token si tu backend lo devuelve
         if (result.accessToken) {
           localStorage.setItem('token', result.accessToken);
         }
+        localStorage.setItem('role', userRole);
 
-        // Redirige según el rol (cambiado aquí)
+        // Guarda el usuario inicial como fallback
+        if (result.user) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+        }
+
+        // ---- NUEVO: Intenta traer el usuario actualizado por si el lastLogin se modificó en la BD ----
+        if (result.user && (result.user._id || result.user.id)) {
+          try {
+            const userId = result.user._id || result.user.id;
+            const updatedUser = await getUserProfile(userId, result.accessToken);
+            if (updatedUser) {
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          } catch {
+            // Si no se puede actualizar, simplemente se queda con el anterior.
+          }
+        }
+
+        // Redirige según el rol
         if (navigate) {
           if (userRole === 'admin') {
             navigate('/admin');
           } else if (userRole === 'docente') {
             navigate('/docente');
           } else {
-            navigate('/'); // fallback por si acaso
+            navigate('/');
           }
         }
       } else {
