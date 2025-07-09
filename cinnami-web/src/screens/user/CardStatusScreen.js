@@ -3,6 +3,93 @@ import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import stylescardstatus from './CardStatusScreen.module.css';
 import globalstyles from '../../styles/globalStyles.module.css';
 
+// MODAL ALERTA personalizada
+function AlertModal({ message, onClose, type = 'info' }) {
+  return (
+    <div className={stylescardstatus.alertOverlay}>
+      <div
+        className={`${stylescardstatus.alertBox} ${
+          type === 'success'
+            ? stylescardstatus.success
+            : type === 'error'
+            ? stylescardstatus.error
+            : stylescardstatus.info
+        }`}
+      >
+        <div className={stylescardstatus.alertContent}>
+          <span style={{ fontWeight: 'bold', fontSize: 20 }}>{message.title}</span>
+          <div style={{ marginTop: 8, marginBottom: 12 }}>{message.body}</div>
+          <button
+            className={stylescardstatus.alertButton}
+            onClick={onClose}
+            style={{
+              background: '#b88d4a',
+              color: 'white',
+              borderRadius: 6,
+              padding: '7px 25px',
+              border: 'none',
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: 'pointer',
+              marginTop: 6
+            }}
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// MODAL DE CONFIRMACIÓN personalizada
+function ConfirmModal({ title, body, onConfirm, onCancel }) {
+  return (
+    <div className={stylescardstatus.alertOverlay}>
+      <div className={stylescardstatus.alertBox}>
+        <div className={stylescardstatus.alertContent}>
+          <span style={{ fontWeight: 'bold', fontSize: 20 }}>{title}</span>
+          <div style={{ marginTop: 8, marginBottom: 14 }}>{body}</div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              className={stylescardstatus.alertButton}
+              onClick={onConfirm}
+              style={{
+                background: '#b88d4a',
+                color: 'white',
+                borderRadius: 6,
+                padding: '7px 22px',
+                border: 'none',
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: 'pointer'
+              }}
+            >
+              Sí, bloquear
+            </button>
+            <button
+              className={stylescardstatus.alertButton}
+              onClick={onCancel}
+              style={{
+                background: '#b6b1a6',
+                color: '#333',
+                borderRadius: 6,
+                padding: '7px 18px',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: 15,
+                cursor: 'pointer'
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Utilidad para obtener el usuario logueado del localStorage
 function getCurrentUser() {
   try {
@@ -19,21 +106,20 @@ export default function CardStatusScreen({ onLogoutClick }) {
   const [loading, setLoading] = useState(true);
   const [cardBlocked, setCardBlocked] = useState(false);
   const [permanentBlocked, setPermanentBlocked] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Cargar usuario y todas las tarjetas
   useEffect(() => {
     const usr = getCurrentUser();
     setUser(usr);
 
-    // 1. Cargar todas las tarjetas
     fetch('http://localhost:3000/api/auth/cards', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
       .then(data => {
         const cards = data.cards || [];
-
-        // 2. Buscar la tarjeta asignada usando _id O uid
         if (usr && usr.cardId) {
           const foundCard = cards.find(
             c => c._id === usr.cardId || c.uid === usr.cardId
@@ -51,57 +137,78 @@ export default function CardStatusScreen({ onLogoutClick }) {
 
   // Cambia el estado temporal de la tarjeta (activar/desactivar)
   const toggleCardBlock = async () => {
-    if (!card) return;
+    if (!card || permanentBlocked) return;
     setLoading(true);
     try {
-      // Cambiar el estado temporal
       const newState = !cardBlocked;
-      // Busca el endpoint correcto según el estado
-      const res = await fetch(`http://localhost:3000/api/auth/cards/${card._id}/${newState ? 'disable' : 'enable'}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const res = await fetch(
+        `http://localhost:3000/api/auth/cards/${card._id}/${newState ? 'disable' : 'enable'}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setCard(data.card);
         setCardBlocked(data.card.state === false);
-        if (newState) {
-          setTimeout(() => alert('Tu tarjeta ha sido bloqueada temporalmente.'), 300);
-        } else {
-          setTimeout(() => alert('Tu tarjeta ha sido reactivada exitosamente.'), 300);
-        }
+        setAlert({
+          title: newState ? "¡Tarjeta Bloqueada!" : "¡Tarjeta Reactivada!",
+          body: newState
+            ? "Tu tarjeta ha sido bloqueada temporalmente. Recuerda activarla cuando la necesites."
+            : "Tu tarjeta fue activada exitosamente y puedes volver a usarla."
+        });
       } else {
-        alert('Error al cambiar el estado de la tarjeta.');
+        setAlert({
+          title: "Error",
+          body: "No se pudo cambiar el estado de la tarjeta."
+        });
       }
     } catch {
-      alert('Error de conexión.');
+      setAlert({
+        title: "Error de conexión",
+        body: "No se pudo comunicar con el servidor. Intenta más tarde."
+      });
     }
     setLoading(false);
   };
 
-  // Bloqueo permanente (requiere campo en la BD)
-  const reportLoss = async () => {
-    if (!card) return;
-    const confirmed = window.confirm('¿Estás seguro de que quieres bloquear permanentemente tu tarjeta? Esta acción requerirá contactar al administrador para reactivarla.');
-    if (confirmed) {
-      setLoading(true);
-      try {
-        // Aquí llamamos a un endpoint especial para el bloqueo permanente
-        const res = await fetch(`http://localhost:3000/api/auth/cards/${card._id}/permanent-block`, {
+  // Bloqueo permanente (requiere confirmación y endpoint)
+  const reportLoss = () => {
+    setShowConfirm(true);
+  };
+
+  const handlePermanentBlock = async () => {
+    setShowConfirm(false);
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/auth/cards/${card._id}/permanent-block`,
+        {
           method: 'PUT',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (res.ok) {
-          setPermanentBlocked(true);
-          alert('Tu solicitud de bloqueo permanente ha sido realizada. Contacta al administrador para más información.');
-        } else {
-          alert('No se pudo bloquear la tarjeta permanentemente.');
         }
-      } catch {
-        alert('Error de conexión.');
+      );
+      if (res.ok) {
+        setPermanentBlocked(true);
+        setAlert({
+          title: "¡Bloqueo Permanente!",
+          body:
+            "Tu tarjeta ha sido bloqueada permanentemente. Contacta al administrador para obtener una nueva o pedir reactivación."
+        });
+      } else {
+        setAlert({
+          title: "Error",
+          body: "No se pudo bloquear la tarjeta permanentemente."
+        });
       }
-      setLoading(false);
+    } catch {
+      setAlert({
+        title: "Error de conexión",
+        body: "No se pudo comunicar con el servidor. Intenta más tarde."
+      });
     }
+    setLoading(false);
   };
 
   // Si no hay usuario o tarjeta, mostramos mensaje
@@ -127,7 +234,7 @@ export default function CardStatusScreen({ onLogoutClick }) {
     );
   }
 
-  // Estilos para bloqueo permanente
+  // Estilos para bloqueo permanente o temporal
   const bloqueada = cardBlocked || permanentBlocked;
 
   return (
@@ -232,6 +339,19 @@ export default function CardStatusScreen({ onLogoutClick }) {
           </div>
         </div>
       </main>
+      {/* Modal personalizado para alertas */}
+      {alert && (
+        <AlertModal message={alert} onClose={() => setAlert(null)} />
+      )}
+      {/* Modal de confirmación para bloqueo permanente */}
+      {showConfirm && (
+        <ConfirmModal
+          title="¿Seguro que quieres bloquear la tarjeta permanentemente?"
+          body="Esta acción es irreversible y solo un administrador podrá desbloquear la tarjeta después. ¿Deseas continuar?"
+          onConfirm={handlePermanentBlock}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
     </div>
   );
 }

@@ -54,8 +54,8 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
         changedFields.push(
           <tr key={key}>
             <td>{prettyLabel[key]}</td>
-            <td>{oldCard ? oldCard.uid : '-'}</td>
-            <td>{newCard ? newCard.uid : '-'}</td>
+            <td>{oldCard ? oldCard.uid : 'Sin asignar'}</td>
+            <td>{newCard ? newCard.uid : 'Sin asignar'}</td>
           </tr>
         );
       }
@@ -100,6 +100,23 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
       </div>
     </div>
   );
+}
+
+// --- FUNCIÓN PARA DESASIGNAR TARJETA ---
+async function unassignCard(cardId) {
+  if (!cardId) return;
+  try {
+    await fetch(`http://localhost:3000/api/auth/cards/${cardId}/assign`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ userId: null })
+    });
+  } catch (err) {
+    console.warn('No se pudo desasignar la tarjeta:', err);
+  }
 }
 
 export default function ManageUsersScreen({ onLogoutClick }) {
@@ -209,8 +226,9 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   // Obtener UID desde _id
   function getCardUID(cardId) {
+    if (!cardId) return "Sin asignar";
     const card = allCards.find(c => c._id === cardId);
-    return card ? card.uid : (cardId || '-');
+    return card ? card.uid : "Sin asignar";
   }
 
   // --------- FUNCIÓN ACTUALIZADA ---------
@@ -380,8 +398,10 @@ export default function ManageUsersScreen({ onLogoutClick }) {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+
       closeUserDetailModal();
       loadUsers();
+      loadAllCards();
     } catch (err) {
       alert('Error al cambiar el estado del usuario');
     }

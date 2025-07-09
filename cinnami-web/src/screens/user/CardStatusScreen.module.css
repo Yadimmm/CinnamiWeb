@@ -416,3 +416,64 @@
       transform: translateY(0);
   }
 }
+/* --- MODALES DE ALERTA Y CONFIRMACIÓN --- */
+
+.alertOverlay {
+  position: fixed;
+  z-index: 9000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(45, 33, 23, 0.23);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s;
+}
+
+.alertBox {
+  background: var(--fondo-tarjeta, #fff9f2);
+  border-radius: 18px;
+  box-shadow: 0 12px 48px rgba(180,140,90,0.16);
+  border: 2px solid var(--color-dorado-acento, #b88d4a);
+  padding: 32px 36px 28px;
+  min-width: 300px;
+  max-width: 90vw;
+  text-align: center;
+  animation: aparecerDesdeAbajo 0.7s;
+}
+
+.alertContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.alertButton {
+  background: var(--color-dorado-acento, #b88d4a);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 7px;
+  border: none;
+  padding: 9px 25px;
+  font-size: 16px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.alertButton:hover {
+  background: #966a2d;
+}
+
+/* Para tipo de alerta éxito o error (opcional) */
+.success {
+  border-color: var(--color-exito, #3eb34d);
+}
+.error {
+  border-color: var(--color-peligro, #d14444);
+}
+
+/* Responsive para móvil */
+@media (max-width: 600px) {
+  .alertBox {
+    padding: 20px 10px;
+  }
+}
