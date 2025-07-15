@@ -42,10 +42,11 @@
 
 /* Barra de herramientas */
 .barraHerramientas {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 30px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--fondo-tarjeta); 
+  border-bottom: 1px solid var(--borde-claro);
 }
 
 .campoBusqueda {

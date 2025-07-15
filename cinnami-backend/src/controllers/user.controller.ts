@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
 import { generateAccessToken, generateRefreshToken } from '../utils/generateToken';
 import { User } from "../models/User";
-import { RefreshToken } from "../utils/RefreshToken"; // Nuevo modelo para refresh tokens
+import { RefreshToken } from "../utils/RefreshToken"; 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dayjs from "dayjs";
 import { Types } from 'mongoose';
 import { Card } from "../models/Card";
+import { sendResetEmail } from '../utils/sendEmail';
+import crypto from "crypto";
 
-// ==============================
 // EDITAR USUARIO (sin cambiar contraseña)
 export const updateUser = async (req: Request, res: Response) => {
   try {
@@ -67,7 +68,7 @@ export const updateUser = async (req: Request, res: Response) => {
     console.error("Error en updateUser: ", error);
     return res.status(500).json({
       message: "Error al actualizar usuario",
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 };
@@ -97,7 +98,7 @@ export const changePassword = async (req: Request, res: Response) => {
     console.error("Error en changePassword:", error);
     return res.status(500).json({
       message: "Error al cambiar la contraseña",
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 };
@@ -142,7 +143,7 @@ export const disableUser = async (req: Request, res: Response) => {
     console.error("Error en disableUser: ", error);
     return res.status(500).json({
       message: "Error al deshabilitar usuario",
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 };
@@ -173,7 +174,8 @@ export const enableUser = async (req: Request, res: Response) => {
     console.error("Error en enableUser: ", error);
     return res.status(500).json({
       message: "Error al habilitar usuario",
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
+
     });
   }
 };
@@ -227,7 +229,58 @@ export const updateUserCardId = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Error al actualizar la tarjeta del usuario',
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     });
+  }
+};
+// 1. Solicitar recuperación (envía correo)
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    // Generar token seguro
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await user.save();
+
+    // Frontend: usar /reset-password?token=xxx (no /reset-password/:token)
+    const resetLink = `http://localhost:3001/reset-password?token=${token}`;
+    await sendResetEmail(user.email, resetLink);
+
+    return res.json({ message: "Se envió un correo con el enlace para restablecer la contraseña." });
+  } catch (error) {
+    console.error("Error en forgotPassword:", error);
+    res.status(500).json({ message: "Error al procesar la solicitud." });
+  }
+};
+
+// 2. Restablecer la contraseña
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    console.log("Token recibido:", token);
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    console.log("Usuario encontrado:", user);
+
+    if (!user) return res.status(400).json({ message: "Token inválido o expirado" });
+
+    // Cambiar contraseña (hash)
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.json({ message: "Contraseña restablecida exitosamente" });
+  } catch (error) {
+    console.error("Error en resetPassword:", error);
+    res.status(500).json({ message: "Error al restablecer la contraseña." });
   }
 };

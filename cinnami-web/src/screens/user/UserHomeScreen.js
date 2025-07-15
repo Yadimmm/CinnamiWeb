@@ -6,7 +6,90 @@ import candado from "../../assets/logos/candado.png";
 import styles from "./UserHomeScreen.module.css";
 import ModalLogout from "../../components/logout/ModalLogout";
 import { FaUserEdit } from "react-icons/fa";
+import { useLoader } from "../../context/LoaderContext";
 
+// --- Alerta bonita de cambios para usuario ---
+function UserChangesAlert({ oldData, newData, onClose }) {
+  const prettyLabel = {
+    firstName: "Nombre(s)",
+    lastName: "Apellidos",
+    username: "Usuario",
+    email: "Correo",
+    role: "Rol",
+    cardId: "Tarjeta"
+  };
+
+  const changedFields = [];
+  Object.keys(newData).forEach(key => {
+    if ((oldData[key] || "") !== (newData[key] || "")) {
+      changedFields.push(
+        <tr key={key}>
+          <td style={{ fontWeight: 600, color: "#383838" }}>{prettyLabel[key] || key}</td>
+          <td style={{ color: "#b1a4a4" }}>{oldData[key] || "-"}</td>
+          <td style={{ color: "#4caf50", fontWeight: 700 }}>{newData[key] || "-"}</td>
+        </tr>
+      );
+    }
+  });
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+      background: "rgba(80, 80, 80, 0.29)", zIndex: 99, display: "flex",
+      alignItems: "center", justifyContent: "center"
+    }}>
+      <div style={{
+        background: "#fff", borderRadius: 22, minWidth: 340, maxWidth: 410,
+        boxShadow: "0 8px 32px 0 rgba(60,50,65,0.15)",
+        padding: "34px 30px 24px 30px",
+        border: "1.8px solid #eee", textAlign: "left",
+        animation: "popUpFadeIn 0.26s"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 10, gap: 8 }}>
+          <span style={{
+            color: "#9764db", fontSize: 32, fontWeight: 900, marginRight: 4,
+            display: "inline-block", transform: "translateY(-2px)"
+          }}>✔️</span>
+          <span style={{ color: "#2eaf5e", fontSize: "1.35rem", fontWeight: 700 }}>
+            Usuario actualizado
+          </span>
+        </div>
+        <div style={{ color: "#7a6d8b", fontSize: "1rem", marginBottom: 16 }}>
+          Estos campos cambiaron:
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 10 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left", fontWeight: 700, fontSize: 16, paddingBottom: 5 }}>Campo</th>
+              <th style={{ textAlign: "left", fontWeight: 700, fontSize: 16, paddingBottom: 5 }}>Antes</th>
+              <th style={{ textAlign: "left", fontWeight: 700, fontSize: 16, paddingBottom: 5 }}>Después</th>
+            </tr>
+          </thead>
+          <tbody>
+            {changedFields.length === 0 ? (
+              <tr>
+                <td colSpan={3} style={{ fontStyle: "italic", color: "#adadad", padding: 10 }}>No hubo cambios.</td>
+              </tr>
+            ) : changedFields}
+          </tbody>
+        </table>
+        <div style={{ textAlign: "right", marginTop: 14 }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: "#b88d4a", color: "#fff", borderRadius: 8,
+              border: "none", padding: "8px 22px", fontWeight: 700,
+              fontSize: 17, boxShadow: "0 2px 8px 0 #e7d9bf36", cursor: "pointer",
+              transition: "background .17s"
+            }}
+          >Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Componente principal ----
 export default function UserHomeScreen() {
   // Estado de usuario
   const [userProfile, setUserProfile] = useState({
@@ -31,6 +114,10 @@ export default function UserHomeScreen() {
     email: "",
   });
   const [showLogout, setShowLogout] = useState(false);
+  const [changesAlert, setChangesAlert] = useState(null); // <- Alerta de cambios
+
+  // Loader global
+  const { showLoader, hideLoader } = useLoader();
 
   // Cargar datos de usuario
   useEffect(() => {
@@ -144,6 +231,8 @@ export default function UserHomeScreen() {
       alert("Todos los campos son obligatorios");
       return;
     }
+    const oldData = { ...userProfile }; // antes de actualizar
+    showLoader("Actualizando...");
     try {
       const res = await fetch(
         `http://localhost:3000/api/auth/${userProfile._id}/update`,
@@ -158,10 +247,12 @@ export default function UserHomeScreen() {
             lastName: formData.lastName,
             username: formData.username,
             email: formData.email,
+            cardId: userProfile.cardId || "", // Siempre envía cardId para evitar error backend
           }),
         }
       );
       const data = await res.json();
+      hideLoader();
       if (res.ok) {
         localStorage.setItem(
           "user",
@@ -181,20 +272,37 @@ export default function UserHomeScreen() {
           email: formData.email,
         }));
         setShowEditModal(false);
+        // Mostrar alerta bonita de cambios
+        setChangesAlert({
+          oldData,
+          newData: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            username: formData.username,
+            email: formData.email,
+            role: userProfile.role,
+            cardId: cardUID,
+          }
+        });
       } else {
         alert(data.message || "No se pudo actualizar el usuario.");
       }
     } catch (err) {
+      hideLoader();
       alert("Ocurrió un error al actualizar.");
     }
   };
 
-  // LOGOUT
+  // LOGOUT CON LOADER
   const handleLogout = () => {
-    localStorage.removeItem("role");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/";
+    showLoader("Cerrando sesión...");
+    setTimeout(() => {
+      localStorage.removeItem("role");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      hideLoader();
+      window.location.href = "/";
+    }, 1200);
   };
 
   // Botón de editar (redondo, gradiente, icono pro)
@@ -207,6 +315,17 @@ export default function UserHomeScreen() {
       <FaUserEdit style={{ color: "#fff", fontSize: 18 }} />
     </button>
   );
+
+  // Mostrar alerta de cambios (si existe)
+  if (changesAlert) {
+    return (
+      <UserChangesAlert
+        oldData={changesAlert.oldData}
+        newData={changesAlert.newData}
+        onClose={() => setChangesAlert(null)}
+      />
+    );
+  }
 
   return (
     <div className={styles.containerPrincipal}>
@@ -294,15 +413,13 @@ export default function UserHomeScreen() {
                   <p className={styles.subtituloPanel}>Gestiona tu acceso</p>
                 </div>
                 <div className={styles.contenedorCandado}>
-                  <div className={styles.imagenCandado}>
-                    <img
-                      src={candado}
-                      alt="Candado de seguridad"
-                      className={styles.candadoImagen}
-                      draggable="false"
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
-                  </div>
+                  <img
+                    src={candado}
+                    alt="Candado de seguridad"
+                    className={styles.candadoImagen}
+                    draggable="false"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
                 </div>
               </div>
               <div className={styles.estadisticasPanel}>

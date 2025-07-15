@@ -12,19 +12,10 @@ import {
   FaEye,
   FaEyeSlash
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { useLoader } from "../../context/LoaderContext"; // <--- LOADER GLOBAL
 
-const initialFormData = {
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  role: 'Docente',
-  names: '',
-  surnames: '',
-  uid: '',
-};
-
-// MODAL de alerta de cambios
+// MODAL DE CAMBIO DE USUARIO
 function ChangesAlert({ oldData, newData, allCards, onClose }) {
   const prettyLabel = {
     username: 'Usuario',
@@ -78,7 +69,6 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
       </tr>
     );
   }
-
   return (
     <div className={styles.changesModalOverlay}>
       <div className={styles.changesModalContent}>
@@ -102,24 +92,51 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
   );
 }
 
-// --- FUNCIÓN PARA DESASIGNAR TARJETA ---
-async function unassignCard(cardId) {
-  if (!cardId) return;
-  try {
-    await fetch(`http://localhost:3000/api/auth/cards/${cardId}/assign`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ userId: null })
-    });
-  } catch (err) {
-    console.warn('No se pudo desasignar la tarjeta:', err);
-  }
+// MODAL DE CONFIRMACIÓN VISUAL
+function ConfirmDisableModal({ visible, user, onCancel, onConfirm }) {
+  if (!visible || !user) return null;
+  return (
+    <div className={styles.confirmModalOverlay}>
+      <div className={styles.confirmModalContent}>
+        <h2 className={styles.confirmTitle}>
+          {user.status ? 'Deshabilitar usuario' : 'Habilitar usuario'}
+        </h2>
+        <div className={styles.confirmText}>
+          ¿Estás seguro de que deseas <b className={user.status ? styles.inactivoText : styles.activoText}>
+            {user.status ? 'deshabilitar' : 'habilitar'}
+          </b> al usuario <b className={styles.nombreUsuario}>{user.firstName} {user.lastName}</b>?
+        </div>
+        <div className={styles.confirmActions}>
+          <button className={styles.cancelButton} onClick={onCancel}>
+            Cancelar
+          </button>
+          <button
+            className={user.status ? styles.disableUserButton : styles.enableUserButton}
+            style={{ minWidth: 120, fontWeight: 700, fontSize: 15, letterSpacing: '.5px', border: 'none' }}
+            onClick={() => onConfirm(user)}
+          >
+            {user.status ? 'Deshabilitar' : 'Habilitar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
+const initialFormData = {
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  role: 'Docente',
+  names: '',
+  surnames: '',
+  uid: '',
+};
+
 export default function ManageUsersScreen({ onLogoutClick }) {
+  const { showLoader, hideLoader } = useLoader();
+
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -135,37 +152,47 @@ export default function ManageUsersScreen({ onLogoutClick }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [changesAlert, setChangesAlert] = useState(null);
 
-  // --- Carga usuarios y tarjetas
-  const loadUsers = () => {
-    fetch('http://localhost:3000/api/auth/all-users', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data.users || []);
-        setFilteredUsers(data.users || []);
-      })
-      .catch(() => {
-        setUsers([]);
-        setFilteredUsers([]);
+  const [confirmDisableModal, setConfirmDisableModal] = useState(false);
+  const [userToDisable, setUserToDisable] = useState(null);
+
+  // --- Carga usuarios y tarjetas (con loader) ---
+  const loadUsers = async () => {
+    showLoader("Cargando usuarios...");
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/all-users', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+      const data = await res.json();
+      setUsers(data.users || []);
+      setFilteredUsers(data.users || []);
+    } catch {
+      setUsers([]);
+      setFilteredUsers([]);
+    }
+    hideLoader();
   };
 
-  const loadAllCards = () => {
-    fetch('http://localhost:3000/api/auth/cards', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => setAllCards(data.cards || []))
-      .catch(() => setAllCards([]));
+  const loadAllCards = async () => {
+    showLoader("Cargando tarjetas...");
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/cards', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      setAllCards(data.cards || []);
+    } catch {
+      setAllCards([]);
+    }
+    hideLoader();
   };
 
   useEffect(() => {
     loadUsers();
     loadAllCards();
+    // eslint-disable-next-line
   }, []);
 
-  // Paginación y filtros
+  // Paginación y filtros (igual)
   const getUsersPerPage = () => window.innerWidth >= 1400 ? 9 : window.innerWidth >= 1024 ? 6 : 5;
   const [usersPerPage, setUsersPerPage] = useState(getUsersPerPage());
   useEffect(() => {
@@ -191,16 +218,18 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     setCurrentPage(1);
   }, [users, searchTerm]);
 
-  // Cargar tarjetas disponibles SOLO cuando abres el modal
   useEffect(() => {
     if (showModal) {
+      showLoader("Cargando tarjetas disponibles...");
       fetch('http://localhost:3000/api/auth/cards/available', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())
         .then(data => setAvailableCards(data.cards || []))
-        .catch(() => setAvailableCards([]));
+        .catch(() => setAvailableCards([]))
+        .finally(() => hideLoader());
     }
+    // eslint-disable-next-line
   }, [showModal]);
 
   const handleInputChange = (e) => {
@@ -210,33 +239,36 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   const handleRoleSelect = (role) => setFormData(prev => ({ ...prev, role }));
 
-  // Validación: SIEMPRE contraseña requerida en editar y crear
+  // -------- Validación modificada ----------
   const validateForm = () => {
     if (!formData.username.trim()) return alert('Por favor ingrese un nombre de usuario');
     if (!formData.email.trim()) return alert('Por favor ingrese un email válido');
     if (!formData.names.trim()) return alert('Por favor ingrese el nombre(s)');
     if (!formData.surnames.trim()) return alert('Por favor ingrese los apellidos');
     if (!formData.uid) return alert('Por favor selecciona una tarjeta');
-    if (!formData.password.trim() || !formData.confirmPassword.trim())
-      return alert('Debe ingresar y confirmar la contraseña');
-    if (formData.password !== formData.confirmPassword)
-      return alert('Las contraseñas no coinciden');
+    // Solo pedir contraseña si es agregar
+    if (modalType === 'add') {
+      if (!formData.password.trim() || !formData.confirmPassword.trim())
+        return alert('Debe ingresar y confirmar la contraseña');
+      if (formData.password !== formData.confirmPassword)
+        return alert('Las contraseñas no coinciden');
+    }
     return true;
   };
 
-  // Obtener UID desde _id
   function getCardUID(cardId) {
     if (!cardId) return "Sin asignar";
     const card = allCards.find(c => c._id === cardId);
     return card ? card.uid : "Sin asignar";
   }
 
-  // --------- FUNCIÓN ACTUALIZADA ---------
+  // -------- Submit con loader y sin edición de contraseña ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     if (modalType === 'add') {
+      showLoader("Agregando usuario...");
       try {
         const userPayload = {
           username: formData.username,
@@ -257,7 +289,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
         });
         const data = await res.json();
         if (res.ok) {
-          // Asignar tarjeta al usuario
+          // Asignar tarjeta
           const userId = data.user._id || data.user.id;
           const cardId = data.user.cardId;
           if (userId && cardId) {
@@ -270,19 +302,47 @@ export default function ManageUsersScreen({ onLogoutClick }) {
               body: JSON.stringify({ userId })
             });
           }
+          toast.success(
+            <div style={{ fontWeight: 800, fontSize: '1.18rem', color: '#9C640C', textAlign: 'center', letterSpacing: '.7px' }}>
+              Usuario agregado exitosamente
+              <div style={{ fontSize: '1.03rem', color: '#53381A', fontWeight: 400, marginTop: 2 }}>
+                El usuario ya puede usar su tarjeta física.
+              </div>
+            </div>,
+            {
+              style: {
+                background: '#FFF5DF',
+                color: '#53381A',
+                fontWeight: 700,
+                borderRadius: '14px',
+                fontSize: '1.12rem',
+                minWidth: 350,
+                maxWidth: 450,
+                minHeight: 50,
+                padding: '16px 26px',
+                border: '1.5px solid #E0A92F',
+                boxShadow: '0 4px 16px 0 rgba(224,169,47,0.10)'
+              },
+              icon: false,
+              autoClose: 3800,
+              closeButton: true,
+              pauseOnHover: true
+            }
+          );
           closeModal();
-          loadUsers();
-          loadAllCards();
+          await loadUsers();
+          await loadAllCards();
         } else {
           alert(data.message || 'No se pudo crear el usuario');
         }
       } catch (err) {
         alert('Error al crear usuario');
       }
+      hideLoader();
     } else if (modalType === 'edit' && editingUser) {
+      showLoader("Actualizando usuario...");
       try {
         const userId = editingUser._id || editingUser.id;
-        // NO mandes la contraseña aquí
         const userPayload = {
           username: formData.username,
           email: formData.email,
@@ -291,8 +351,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
           lastName: formData.surnames,
           cardId: formData.uid
         };
-
-        // 1. Actualiza los datos normales
         const res = await fetch(`http://localhost:3000/api/auth/${userId}/update`, {
           method: 'PUT',
           headers: {
@@ -304,25 +362,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
         const data = await res.json();
 
         if (res.ok) {
-          // 2. Solo si la contraseña no está vacía, mándala a /change-password
-          if (formData.password.trim()) {
-            const passRes = await fetch(`http://localhost:3000/api/auth/${userId}/change-password`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({ newPassword: formData.password })
-            });
-            if (!passRes.ok) {
-              const passErr = await passRes.json();
-              alert(passErr.message || 'No se pudo actualizar la contraseña');
-              return;
-            }
-          }
-
-          // ==== CAMBIO IMPORTANTE ====
-          // 1. Desasigna la tarjeta anterior si cambia
           if (editingUser.cardId && editingUser.cardId !== formData.uid) {
             await fetch(`http://localhost:3000/api/auth/cards/${editingUser.cardId}/assign`, {
               method: 'PUT',
@@ -333,7 +372,6 @@ export default function ManageUsersScreen({ onLogoutClick }) {
               body: JSON.stringify({ userId: null })
             });
           }
-          // 2. Asigna la nueva tarjeta si cambia
           if (formData.uid && editingUser.cardId !== formData.uid) {
             await fetch(`http://localhost:3000/api/auth/cards/${formData.uid}/assign`, {
               method: 'PUT',
@@ -344,17 +382,14 @@ export default function ManageUsersScreen({ onLogoutClick }) {
               body: JSON.stringify({ userId })
             });
           }
-          // ==== FIN DEL CAMBIO ====
-
           closeModal();
-          loadUsers();
-          loadAllCards();
+          await loadUsers();
+          await loadAllCards();
           setChangesAlert({
             oldData: editingUser,
             newData: {
               username: formData.username,
               email: formData.email,
-              password: formData.password ? '******' : '',
               role: formData.role,
               firstName: formData.names,
               lastName: formData.surnames,
@@ -367,9 +402,9 @@ export default function ManageUsersScreen({ onLogoutClick }) {
       } catch (err) {
         alert('Error al actualizar usuario');
       }
+      hideLoader();
     }
   };
-  // ---------------------------------------
 
   const openAddModal = () => {
     setModalType('add');
@@ -388,26 +423,89 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   const closeUserDetailModal = () => setSelectedUser(null);
 
-  // Habilitar/deshabilitar usuario
-  const handleDisableUser = async (user) => {
+  // NUEVO: Muestra modal confirmación y setea usuario
+  const handleDisableUser = (user) => {
+    setUserToDisable(user);
+    setConfirmDisableModal(true);
+  };
+
+  // NUEVO: Lógica solo si confirman
+  const confirmDisableUser = async (user) => {
+    setConfirmDisableModal(false);
+    setUserToDisable(null);
+    showLoader(user.status ? "Deshabilitando usuario..." : "Habilitando usuario...");
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("Inicia sesión nuevamente");
+        window.location.href = '/';
+        hideLoader();
+        return;
+      }
       const url = user.status
         ? `http://localhost:3000/api/auth/${user._id}/disable`
         : `http://localhost:3000/api/auth/${user._id}/enable`;
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
+      if (!res.ok) {
+        let msg = "No se pudo cambiar el estado del usuario.";
+        try {
+          const data = await res.json();
+          msg = data.message || msg;
+        } catch { }
+        if (res.status === 403) {
+          toast.error("No tienes permisos para esta acción. Debes iniciar sesión como admin.");
+          window.location.href = '/';
+          hideLoader();
+          return;
+        }
+        toast.error(msg);
+        hideLoader();
+        return;
+      }
+
       closeUserDetailModal();
-      loadUsers();
-      loadAllCards();
+      await loadUsers();
+      await loadAllCards();
+      toast.success(
+        <div style={{
+          fontWeight: 800,
+          fontSize: '1.16rem',
+          color: user.status ? '#F44336' : '#28A745',
+          textAlign: 'center',
+          letterSpacing: '.7px'
+        }}>
+          {user.status ? 'Usuario deshabilitado' : 'Usuario habilitado'}
+        </div>,
+        {
+          style: {
+            background: user.status ? '#FFF0F0' : '#E6F7EE',
+            color: 'var(--colorCafePrincipal)',
+            fontWeight: 700,
+            borderRadius: '14px',
+            fontSize: '1.12rem',
+            minWidth: 320,
+            maxWidth: 400,
+            minHeight: 45,
+            padding: '16px 26px',
+            border: user.status ? '1.5px solid #F44336' : '1.5px solid #28A745',
+            boxShadow: '0 4px 16px 0 rgba(52,100,44,0.10)'
+          },
+          icon: false,
+          autoClose: 3600,
+          closeButton: true,
+          pauseOnHover: true
+        }
+      );
     } catch (err) {
-      alert('Error al cambiar el estado del usuario');
+      toast.error('Error al cambiar el estado del usuario');
     }
+    hideLoader();
   };
 
-  // EDITAR usuario
   const handleEditUser = (user) => {
     setModalType('edit');
     setEditingUser(user);
@@ -425,11 +523,9 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     setSelectedUser(null);
   };
 
-  // Paginación
   const handlePreviousPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
 
-  // ALERTA DE CAMBIOS
   if (changesAlert) {
     return (
       <ChangesAlert
@@ -554,44 +650,49 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                   />
                 </div>
                 <div className={styles.formColumn}>
-                  <div className={styles.passwordContainer}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      className={styles.input}
-                      placeholder="Contraseña"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      className={styles.passwordToggle}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                  <div className={styles.passwordContainer}>
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      className={styles.input}
-                      placeholder="Confirmar contraseña"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      required
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      className={styles.passwordToggle}
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
+                  {/* SOLO si es agregar usuario, pide contraseña */}
+                  {modalType === 'add' && (
+                    <>
+                      <div className={styles.passwordContainer}>
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          className={styles.input}
+                          placeholder="Contraseña"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required={modalType === 'add'}
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                      <div className={styles.passwordContainer}>
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          className={styles.input}
+                          placeholder="Confirmar contraseña"
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          required={modalType === 'add'}
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </>
+                  )}
                   {/* Selector de tarjetas disponibles */}
                   <select
                     name="uid"
@@ -670,6 +771,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
                 <button className={styles.saveButton} onClick={() => handleEditUser(selectedUser)}>
                   Editar
                 </button>
+                {/* Botón para deshabilitar/habilitar */}
                 <button
                   className={selectedUser.status ? styles.disableUserButton : styles.enableUserButton}
                   onClick={() => handleDisableUser(selectedUser)}
@@ -684,6 +786,13 @@ export default function ManageUsersScreen({ onLogoutClick }) {
           </div>
         </div>
       )}
+      {/* --- Modal de confirmación --- */}
+      <ConfirmDisableModal
+        visible={confirmDisableModal}
+        user={userToDisable}
+        onCancel={() => { setConfirmDisableModal(false); setUserToDisable(null); }}
+        onConfirm={confirmDisableUser}
+      />
     </div>
   );
 }

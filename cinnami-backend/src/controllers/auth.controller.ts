@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { generateAccessToken, generateRefreshToken } from '../utils/generateToken';
 import { User } from "../models/User";
-import { RefreshToken } from "../utils/RefreshToken"; // Nuevo modelo para refresh tokens
+import { RefreshToken } from "../utils/RefreshToken";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dayjs from "dayjs";
@@ -22,10 +22,10 @@ export const login = async (req: Request, res: Response) => {
 
         // 2. VERIFICAR SI EL USUARIO ESTÁ HABILITADO
         if (user.status === false) {
-        return res.status(403).json({ 
-            message: "Tu cuenta ha sido deshabilitada. Contacta al administrador para más información.",
-            code: "ACCOUNT_DISABLED"
-        });
+            return res.status(403).json({
+                message: "Tu cuenta ha sido deshabilitada. Contacta al administrador para más información.",
+                code: "ACCOUNT_DISABLED"
+            });
         }
 
         // 2. Verificar contraseña
@@ -35,7 +35,11 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // 3. Generar tokens
-        const accessToken = generateAccessToken(user._id.toString());
+        const accessToken = generateAccessToken({
+            _id: user._id.toString(),
+            role: user.role,
+            username: user.username
+        });
         const refreshToken = generateRefreshToken(user._id.toString());
 
         // 4. Guardar refresh token en DB (nuevo)
@@ -59,19 +63,22 @@ export const login = async (req: Request, res: Response) => {
                 email: user.email,
                 role: user.role,
                 status: user.status,
-                firstName: user.firstName,      
-                lastName: user.lastName,        
-                cardId: user.cardId            
+                firstName: user.firstName,
+                lastName: user.lastName,
+                cardId: user.cardId
             }
         });
 
     } catch (error) {
         console.error("Error en login:", error);
-        res.status(500).json({ message: "Error interno en el servidor" });
+        res.status(500).json({
+            message: "Error interno en el servidor",
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 };
 
-// REFRESH TOKEN - Versión mejorada
+// REFRESH TOKEN - Versión corregida
 export const refreshToken = async (req: Request, res: Response) => {
     const { token } = req.body;
 
@@ -89,9 +96,19 @@ export const refreshToken = async (req: Request, res: Response) => {
         // 2. Verificar firma JWT
         const decoded = jwt.verify(token, process.env.REFRESH_SECRET || 'refresh_secret') as { userId: string };
 
+        // 2.1 Buscar usuario por ID
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
         // 3. Generar nuevos tokens
-        const newAccessToken = generateAccessToken(decoded.userId);
-        const newRefreshToken = generateRefreshToken(decoded.userId);
+        const newAccessToken = generateAccessToken({
+            _id: user._id.toString(),
+            role: user.role,
+            username: user.username
+        });
+        const newRefreshToken = generateRefreshToken(user._id.toString());
 
         // 4. Actualizar refresh token en DB
         await RefreshToken.findByIdAndUpdate(storedToken._id, {
@@ -99,9 +116,9 @@ export const refreshToken = async (req: Request, res: Response) => {
             expiresAt: dayjs().add(7, 'days').toDate()
         });
 
-        return res.json({ 
-            accessToken: newAccessToken, 
-            refreshToken: newRefreshToken 
+        return res.json({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
         });
 
     } catch (err) {
@@ -118,10 +135,12 @@ export const logout = async (req: Request, res: Response) => {
         await RefreshToken.deleteOne({ token: refreshToken });
         res.json({ message: 'Sesión cerrada correctamente' });
     } catch (error) {
-        res.status(500).json({ message: 'Error al cerrar sesión' });
+        res.status(500).json({
+            message: 'Error al cerrar sesión',
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 };
- 
 
 // CREAR UN NUEVO USUARIO
 export const createUser = async (req: Request, res: Response) => {
@@ -166,15 +185,21 @@ export const createUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error("Error ocurrido en createUser: ", error);
-        return res.status(500).json({ message: "Error al crear usuario", error });
+        return res.status(500).json({
+            message: "Error al crear usuario",
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const users = await User.find().select('-password'); // opcional ocultar contraseña
-    res.status(200).json({ users });
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los usuarios' });
-  }
+    try {
+        const users = await User.find().select('-password'); // opcional ocultar contraseña
+        res.status(200).json({ users });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error al obtener los usuarios',
+            error: error instanceof Error ? error.message : String(error)
+        });
+    }
 };

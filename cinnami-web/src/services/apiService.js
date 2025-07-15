@@ -1,10 +1,12 @@
-import { API_BASE_URL } from '../utils/constant';             
+import { API_BASE_URL } from '../utils/constant';
 
-// INICIAR SESIÓN
+// INICIAR SESIÓN (¡CORREGIDO! Usa identifier)
 export async function login(email, password) {
   const response = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    // Cambia email → identifier, porque tu backend así lo espera
     body: JSON.stringify({ identifier: email, password }),
   });
 
@@ -16,14 +18,14 @@ export async function login(email, password) {
     } catch {}
     throw new Error(errMsg);
   }
-
   return await response.json();
 }
 
 // TRAER PERFIL DE USUARIO (por ID, después de login)
 export async function getUserProfile(userId, token) {
   const response = await fetch(`${API_BASE_URL}/all-users`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
   });
   if (!response.ok) return null;
   const data = await response.json();
@@ -38,6 +40,7 @@ export async function registerUser(userData) {
   const response = await fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(userData),
   });
   if (!response.ok) {
@@ -59,6 +62,7 @@ export async function updateUser(userId, userData, token) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
+    credentials: 'include',
     body: JSON.stringify(userData),
   });
   if (!response.ok) {
@@ -75,7 +79,8 @@ export async function updateUser(userId, userData, token) {
 // OBTENER TARJETAS
 export async function getAllCards(token) {
   const response = await fetch(`${API_BASE_URL}/cards`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
   });
   if (!response.ok) throw new Error("Error al obtener tarjetas");
   return await response.json();

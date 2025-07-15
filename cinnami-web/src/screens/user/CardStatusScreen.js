@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import stylescardstatus from './CardStatusScreen.module.css';
 import globalstyles from '../../styles/globalStyles.module.css';
+import { useLoader } from "../../context/LoaderContext"; // Loader global
 
 // MODAL ALERTA personalizada
 function AlertModal({ message, onClose, type = 'info' }) {
@@ -103,22 +104,25 @@ function getCurrentUser() {
 export default function CardStatusScreen({ onLogoutClick }) {
   const [user, setUser] = useState(null);
   const [card, setCard] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [cardBlocked, setCardBlocked] = useState(false);
   const [permanentBlocked, setPermanentBlocked] = useState(false);
   const [alert, setAlert] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Cargar usuario y todas las tarjetas
-  useEffect(() => {
-    const usr = getCurrentUser();
-    setUser(usr);
+  const { showLoader, hideLoader } = useLoader(); // Loader global
 
-    fetch('http://localhost:3000/api/auth/cards', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
+  // Cargar usuario y tarjetas
+  useEffect(() => {
+    async function fetchData() {
+      showLoader("Cargando información...");
+      try {
+        const usr = getCurrentUser();
+        setUser(usr);
+
+        const res = await fetch('http://localhost:3000/api/auth/cards', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await res.json();
         const cards = data.cards || [];
         if (usr && usr.cardId) {
           const foundCard = cards.find(
@@ -130,15 +134,17 @@ export default function CardStatusScreen({ onLogoutClick }) {
             setPermanentBlocked(!!foundCard.permanentBlocked);
           }
         }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch {}
+      hideLoader();
+    }
+    fetchData();
+    // eslint-disable-next-line
   }, []);
 
-  // Cambia el estado temporal de la tarjeta (activar/desactivar)
+  // Cambia el estado temporal de la tarjeta
   const toggleCardBlock = async () => {
     if (!card || permanentBlocked) return;
-    setLoading(true);
+    showLoader(cardBlocked ? "Activando tarjeta..." : "Bloqueando tarjeta...");
     try {
       const newState = !cardBlocked;
       const res = await fetch(
@@ -170,17 +176,15 @@ export default function CardStatusScreen({ onLogoutClick }) {
         body: "No se pudo comunicar con el servidor. Intenta más tarde."
       });
     }
-    setLoading(false);
+    hideLoader();
   };
 
   // Bloqueo permanente (requiere confirmación y endpoint)
-  const reportLoss = () => {
-    setShowConfirm(true);
-  };
+  const reportLoss = () => setShowConfirm(true);
 
   const handlePermanentBlock = async () => {
     setShowConfirm(false);
-    setLoading(true);
+    showLoader("Bloqueando permanentemente...");
     try {
       const res = await fetch(
         `http://localhost:3000/api/auth/cards/${card._id}/permanent-block`,
@@ -208,21 +212,10 @@ export default function CardStatusScreen({ onLogoutClick }) {
         body: "No se pudo comunicar con el servidor. Intenta más tarde."
       });
     }
-    setLoading(false);
+    hideLoader();
   };
 
-  // Si no hay usuario o tarjeta, mostramos mensaje
-  if (loading) {
-    return (
-      <div className={stylescardstatus.containerPrincipal}>
-        <NavigationMenu userType="docente" onLogoutClick={onLogoutClick} />
-        <main className={stylescardstatus.contenedorDashboard}>
-          <h1 className={globalstyles.title}>Cargando...</h1>
-        </main>
-      </div>
-    );
-  }
-
+  // Si no hay usuario o tarjeta
   if (!user || !card) {
     return (
       <div className={stylescardstatus.containerPrincipal}>

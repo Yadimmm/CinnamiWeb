@@ -69,8 +69,10 @@
 
 /* Barra de búsqueda actualizada */
 .searchBar {
-  position: relative;
-  margin-bottom: 30px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--fondoTarjeta)
 }
 
 .searchInput {
@@ -1043,5 +1045,69 @@ button:focus,
   .changesTable td {
     padding: 6px 2px;
     font-size: 0.97em;
+  }
+}
+/* ===== MODAL CONFIRMACIÓN DESHABILITAR/HABILITAR ===== */
+.confirmModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45,27,27, 0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s;
+  backdrop-filter: blur(3px) saturate(1.1);
+}
+.confirmModalContent {
+  background: var(--fondoModal);
+  border-radius: 22px;
+  padding: 32px 30px 25px 30px;
+  max-width: 400px;
+  width: 97vw;
+  box-shadow: 0 8px 32px 0 rgba(75,60,44,0.13);
+  border: 2px solid var(--colorCafePrincipal);
+  animation: slideIn 0.24s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.confirmTitle {
+  font-size: 1.32em;
+  font-weight: 800;
+  color: var(--colorCafePrincipal);
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
+}
+.confirmText {
+  font-size: 1.11em;
+  color: var(--textoSecundario);
+  margin-bottom: 20px;
+}
+.confirmActions {
+  display: flex;
+  gap: 17px;
+  justify-content: center;
+  margin-top: 6px;
+}
+.nombreUsuario {
+  color: var(--colorCafePrincipal);
+  font-weight: 600;
+}
+.activoText {
+  color: var(--colorActivo);
+  font-weight: 700;
+}
+.inactivoText {
+  color: var(--colorInactivo);
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .confirmModalContent {
+    padding: 18px 8px 18px 8px;
+    border-radius: 13px;
+    font-size: 0.97em;
+    max-width: 98vw;
   }
 }

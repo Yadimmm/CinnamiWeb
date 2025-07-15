@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Importar pantallas
 import LoginScreen from '../screens/user/LoginScreen';
@@ -15,6 +15,10 @@ import ManageDoorsScreen from '../screens/admin/ManageDoorsScreen';
 import UserHomeScreen from '../screens/user/UserHomeScreen';
 import CardStatusScreen from '../screens/user/CardStatusScreen';
 import AccessHistoryScreen from '../screens/user/AccessHistoryScreen';
+
+// Forgot/Reset Password
+import ForgotPasswordScreen from '../screens/user/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/user/ResetPasswordScreen';
 
 export default function AppRouter() {
   return (
@@ -34,6 +38,10 @@ export default function AppRouter() {
         <Route path="/user" element={<UserHomeScreen />} />
         <Route path="/user/cards" element={<CardStatusScreen />} />
         <Route path="/user/history" element={<AccessHistoryScreen />} />
+
+        {/* Recuperación de contraseña */}
+        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+        <Route path="/reset-password" element={<ResetPasswordScreen />} />
       </Routes>
     </Router>
   );

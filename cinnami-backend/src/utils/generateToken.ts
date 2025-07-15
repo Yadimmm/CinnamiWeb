@@ -3,19 +3,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ACCESS_SECRET = process.env.JWT_SECRET || 'default_secret'; // usa el .env o valor por defecto
+const ACCESS_SECRET = process.env.JWT_SECRET || 'default_secret';
 
-// Genera un access token válido por 15 minutos
-export const generateAccessToken = (userId: string): string => {
+export const generateAccessToken = (user: { _id: string; role: string; username?: string }) => {
   return jwt.sign(
-    { userId },
+    {
+      userId: user._id,        // ¡Siempre el ID!
+      role: user.role,         // ¡Incluye el rol!
+      username: user.username, // Opcional, útil para mostrar
+    },
     ACCESS_SECRET,
     { expiresIn: '2h' }
   );
 };
 
-
-// como un updateTime , es válido para 7 días
+// Refreshtoken solo requiere el userId (puedes dejarlo así si no lo usas para permisos)
 export const generateRefreshToken = (userId: string): string => {
   return jwt.sign(
     { userId },

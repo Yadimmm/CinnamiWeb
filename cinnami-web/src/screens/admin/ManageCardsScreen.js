@@ -3,6 +3,7 @@ import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import styles from './ManageCardsScreen.module.css';
 import globalstyles from '../../styles/globalStyles.module.css';
 import { toast } from 'react-toastify';
+import { useLoader } from "../../context/LoaderContext"; // <-- Loader global
 
 // MODAL DE CONFIRMACIÓN CON COLORES CÁLIDOS
 function ConfirmModal({ open, title, message, onConfirm, onCancel }) {
@@ -15,11 +16,11 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel }) {
       alignItems: 'center', justifyContent: 'center'
     }}>
       <div style={{
-        background: '#fff9f2',      // beige cálido
-        color: '#53381A',           // café oscuro
+        background: '#fff9f2',
+        color: '#53381A',
         padding: '34px 36px 30px 36px',
         borderRadius: 18,
-        boxShadow: '0 8px 40px 0 rgba(224,169,47,0.14)', // sombra dorada
+        boxShadow: '0 8px 40px 0 rgba(224,169,47,0.14)',
         minWidth: 340, maxWidth: '98vw',
         textAlign: 'center',
         animation: 'fadeInScale .23s'
@@ -60,8 +61,9 @@ export default function ManageCardsScreen({ onLogoutClick }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCard, setNewCard] = useState({ cardId: '' });
 
-  // Confirmación visual para acciones destructivas
   const [confirm, setConfirm] = useState({ open: false, type: '', cardId: null, cardState: null });
+
+  const { showLoader, hideLoader } = useLoader(); // <-- loader global
 
   const getToken = () => localStorage.getItem('token');
 
@@ -76,32 +78,10 @@ export default function ManageCardsScreen({ onLogoutClick }) {
         setCards(data.cards || []);
         setFilteredCards(data.cards || []);
       } else {
-        toast.error(data.message || 'No se pudieron obtener las tarjetas', {
-          style: {
-            background: '#FFEBEE',
-            color: '#8b0000',
-            fontWeight: 500,
-            borderRadius: '13px',
-            fontSize: '1.08rem',
-            minWidth: 310,
-            maxWidth: 420,
-            padding: '17px 20px'
-          }
-        });
+        toast.error(data.message || 'No se pudieron obtener las tarjetas');
       }
-    } catch (err) {
-      toast.error('Error de red o del servidor', {
-        style: {
-          background: '#FFEBEE',
-          color: '#8b0000',
-          fontWeight: 500,
-          borderRadius: '13px',
-          fontSize: '1.08rem',
-          minWidth: 310,
-          maxWidth: 420,
-          padding: '17px 20px'
-        }
-      });
+    } catch {
+      toast.error('Error de red o del servidor');
       setCards([]);
       setFilteredCards([]);
     }
@@ -119,11 +99,10 @@ export default function ManageCardsScreen({ onLogoutClick }) {
 
   const handleSearch = (e) => setSearchTerm(e.target.value);
 
-  // En vez de window.confirm, abrimos modal
   const askDeleteCard = (cardId) => setConfirm({ open: true, type: 'delete', cardId });
   const askToggleCard = (cardId, state) => setConfirm({ open: true, type: state ? 'block' : 'unblock', cardId, cardState: state });
 
-  // Cuando el usuario confirma en el modal
+  // Confirmación modal
   const handleConfirm = async () => {
     if (confirm.type === 'delete') await deleteCard(confirm.cardId);
     else if (confirm.type === 'block' || confirm.type === 'unblock') await toggleCardStatus(confirm.cardId, confirm.cardState);
@@ -134,6 +113,7 @@ export default function ManageCardsScreen({ onLogoutClick }) {
   // Bloquear/desbloquear tarjeta
   const toggleCardStatus = async (cardId, state) => {
     const action = state ? 'bloquear' : 'desbloquear';
+    showLoader(action === "bloquear" ? "Bloqueando tarjeta..." : "Desbloqueando tarjeta...");
     try {
       const token = getToken();
       const url = state
@@ -146,66 +126,23 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       const data = await res.json();
       if (res.ok) {
         toast.success(
-          <div style={{
-            fontWeight: 700,
-            color: '#8D6105',
-            fontSize: '1.13rem',
-            letterSpacing: '0.1px',
-            textAlign: 'center'
-          }}>
-            {action === 'bloquear' ? 'Tarjeta bloqueada exitosamente' : 'Tarjeta desbloqueada exitosamente'}
-          </div>,
-          {
-            style: {
-              background: '#FCF3DF',
-              color: '#53381A',
-              fontWeight: 700,
-              borderRadius: '14px',
-              fontSize: '1.13rem',
-              minWidth: 350,
-              maxWidth: 450,
-              minHeight: 42,
-              padding: '16px 26px',
-              border: '1.5px solid #E0A92F',
-              boxShadow: '0 4px 16px 0 rgba(224,169,47,0.10)'
-            },
-            icon: false,
-            autoClose: 3300
-          }
+          action === 'bloquear' ? 'Tarjeta bloqueada exitosamente' : 'Tarjeta desbloqueada exitosamente'
         );
+        hideLoader(); // OCULTA loader ANTES de refrescar la lista
         fetchCards();
       } else {
-        toast.error(data.message || 'No se pudo cambiar el estado', {
-          style: {
-            background: '#FFEBEE',
-            color: '#8b0000',
-            fontWeight: 500,
-            borderRadius: '13px',
-            fontSize: '1.08rem',
-            minWidth: 310,
-            maxWidth: 420,
-            padding: '17px 20px'
-          }
-        });
+        toast.error(data.message || 'No se pudo cambiar el estado');
+        hideLoader();
       }
     } catch (err) {
-      toast.error('Error al cambiar el estado', {
-        style: {
-          background: '#FFEBEE',
-          color: '#8b0000',
-          fontWeight: 500,
-          borderRadius: '13px',
-          fontSize: '1.08rem',
-          minWidth: 310,
-          maxWidth: 420,
-          padding: '17px 20px'
-        }
-      });
+      toast.error('Error al cambiar el estado');
+      hideLoader();
     }
   };
 
   // Eliminar tarjeta
   const deleteCard = async (cardId) => {
+    showLoader("Eliminando tarjeta...");
     try {
       const token = getToken();
       const res = await fetch(`http://localhost:3000/api/auth/cards/${cardId}/delete`, {
@@ -214,86 +151,26 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(
-          <div style={{
-            fontWeight: 700,
-            color: '#8D6105',
-            fontSize: '1.13rem',
-            textAlign: 'center'
-          }}>
-            Tarjeta eliminada exitosamente
-          </div>,
-          {
-            style: {
-              background: '#FCF3DF',
-              color: '#53381A',
-              fontWeight: 700,
-              borderRadius: '14px',
-              fontSize: '1.13rem',
-              minWidth: 350,
-              maxWidth: 450,
-              minHeight: 42,
-              padding: '16px 26px',
-              border: '1.5px solid #E0A92F',
-              boxShadow: '0 4px 16px 0 rgba(224,169,47,0.10)'
-            },
-            icon: false,
-            autoClose: 3400
-          }
-        );
+        toast.success("Tarjeta eliminada exitosamente");
+        hideLoader();
         fetchCards();
       } else {
-        toast.error(data.message || 'No se pudo eliminar la tarjeta', {
-          style: {
-            background: '#FFEBEE',
-            color: '#8b0000',
-            fontWeight: 500,
-            borderRadius: '13px',
-            fontSize: '1.08rem',
-            minWidth: 310,
-            maxWidth: 420,
-            padding: '17px 20px'
-          }
-        });
+        toast.error(data.message || 'No se pudo eliminar la tarjeta');
+        hideLoader();
       }
     } catch (err) {
-      toast.error('Error al eliminar la tarjeta', {
-        style: {
-          background: '#FFEBEE',
-          color: '#8b0000',
-          fontWeight: 500,
-          borderRadius: '13px',
-          fontSize: '1.08rem',
-          minWidth: 310,
-          maxWidth: 420,
-          padding: '17px 20px'
-        }
-      });
+      toast.error('Error al eliminar la tarjeta');
+      hideLoader();
     }
   };
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setNewCard({ cardId: '' });
-  };
-
+  // Registrar nueva tarjeta
   const saveCard = async () => {
     if (!newCard.cardId.trim()) {
-      toast.info('Por favor, ingrese el ID de la tarjeta.', {
-        style: {
-          background: '#FFF8E1',
-          color: '#53381A',
-          fontWeight: 600,
-          borderRadius: '12px',
-          fontSize: '1.08rem',
-          minWidth: 310,
-          maxWidth: 420,
-          padding: '17px 20px'
-        }
-      });
+      toast.info('Por favor, ingrese el ID de la tarjeta.');
       return;
     }
+    showLoader("Registrando tarjeta...");
     try {
       const token = getToken();
       const res = await fetch('http://localhost:3000/api/auth/addCard', {
@@ -306,74 +183,24 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(
-          <div style={{
-            fontWeight: 800,
-            fontSize: '1.21rem',
-            color: '#9C640C',
-            textAlign: 'center',
-            letterSpacing: '.7px'
-          }}>
-            Tarjeta creada exitosamente
-            <div style={{
-              fontSize: '1.03rem',
-              color: '#53381A',
-              fontWeight: 400,
-              marginTop: 2
-            }}>
-              Ahora puedes asignarla o usarla en el sistema.
-            </div>
-          </div>,
-          {
-            style: {
-              background: '#FFF5DF',
-              color: '#53381A',
-              fontWeight: 700,
-              borderRadius: '14px',
-              fontSize: '1.12rem',
-              minWidth: 350,
-              maxWidth: 450,
-              minHeight: 50,
-              padding: '16px 26px',
-              border: '1.5px solid #E0A92F',
-              boxShadow: '0 4px 16px 0 rgba(224,169,47,0.10)'
-            },
-            icon: false,
-            autoClose: 4200,
-            closeButton: true,
-            pauseOnHover: true
-          }
-        );
+        toast.success("Tarjeta creada exitosamente");
+        hideLoader();
         closeModal();
         fetchCards();
       } else {
-        toast.error(data.message || 'No se pudo registrar la tarjeta', {
-          style: {
-            background: '#FFEBEE',
-            color: '#8b0000',
-            fontWeight: 500,
-            borderRadius: '13px',
-            fontSize: '1.08rem',
-            minWidth: 310,
-            maxWidth: 420,
-            padding: '17px 20px'
-          }
-        });
+        toast.error(data.message || 'No se pudo registrar la tarjeta');
+        hideLoader();
       }
     } catch (err) {
-      toast.error('Error al registrar la tarjeta', {
-        style: {
-          background: '#FFEBEE',
-          color: '#8b0000',
-          fontWeight: 500,
-          borderRadius: '13px',
-          fontSize: '1.08rem',
-          minWidth: 310,
-          maxWidth: 420,
-          padding: '17px 20px'
-        }
-      });
+      toast.error('Error al registrar la tarjeta');
+      hideLoader();
     }
+  };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setNewCard({ cardId: '' });
   };
 
   const handleInputChange = (value) => setNewCard({ cardId: value });

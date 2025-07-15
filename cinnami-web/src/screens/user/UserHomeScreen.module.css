@@ -840,3 +840,162 @@ body {
 .btnSave:hover {
   background: linear-gradient(135deg, #D4A574, #B87333);
 }
+/* En tu UserHomeScreen.module.css */
+.changesModalOverlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(25, 19, 7, 0.16);
+  display: flex; align-items: flex-start; justify-content: center; z-index: 9999;
+}
+.changesModalContent {
+  margin-top: 56px;
+  background: #fff8ea;
+  border: 2px solid #e8c686;
+  border-radius: 16px;
+  box-shadow: 0 6px 32px 0 rgba(167, 133, 47, 0.11);
+  padding: 34px 32px 30px 32px;
+  min-width: 380px;
+  max-width: 98vw;
+  animation: popUp .19s cubic-bezier(.21,1.08,.77,1.1);
+}
+@keyframes popUp {
+  0% { transform: scale(.97) translateY(60px); opacity: 0.3;}
+  100% { transform: scale(1) translateY(0); opacity: 1;}
+}
+.alertHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0.9rem;
+}
+.alertIcon {
+  font-size: 2.1rem;
+  color: #a97c1d;
+}
+.alertTitle {
+  font-size: 1.43rem;
+  color: #69511e;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.alertText {
+  margin-bottom: 0.7rem;
+  color: #977930;
+  font-size: 1rem;
+}
+.alertTable {
+  border-collapse: collapse;
+  margin-bottom: 1.4rem;
+  width: 100%;
+  font-size: 1.03rem;
+}
+.alertTable th, .alertTable td {
+  padding: 6px 14px 6px 4px;
+}
+.alertTable th {
+  color: #795900;
+  font-weight: 900;
+  font-size: 1.03rem;
+  letter-spacing: .2px;
+}
+.alertCampo {
+  font-weight: 500;
+  color: #9b883c;
+}
+.alertAntes {
+  color: #bcab7a;
+  font-weight: 500;
+}
+.alertAhora {
+  color: #378d20;
+  font-weight: 800;
+}
+.alertCloseBtn {
+  background: linear-gradient(92deg, #b88d4a 80%, #ad7e22 100%);
+  color: #fff; font-size: 1.13rem; font-weight: 700;
+  border: none; border-radius: 8px;
+  padding: 9px 38px; cursor: pointer; margin-top: 8px;
+  letter-spacing: .4px;
+  box-shadow: 0 2px 7px 0 rgba(196,155,61,0.05);
+  transition: background 0.13s;
+}
+.alertCloseBtn:hover {
+  background: linear-gradient(88deg, #ad7e22 90%, #b88d4a 100%);
+}
+.changesModalOverlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44,39,32,0.28);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+  min-height: 100vh;
+}
+.changesModalContent {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 10px 36px 0 rgba(112, 84, 28, 0.13);
+  padding: 36px 36px 30px 36px;
+  min-width: 370px;
+  max-width: 96vw;
+  animation: popUp .20s cubic-bezier(.24,1.14,.77,1.07);
+}
+@keyframes popUp {
+  0% { transform: scale(.97) translateY(90px); opacity: 0.25;}
+  100% { transform: scale(1) translateY(0); opacity: 1;}
+}
+.alertHeader {
+  display: flex; align-items: center; gap: 13px; margin-bottom: 1.2rem;
+}
+.alertIcon {
+  font-size: 2.1rem;
+  color: #59b463;
+}
+.alertTitleGreen {
+  font-size: 1.42rem;
+  color: #2d8241;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.alertText {
+  margin-bottom: 1.1rem;
+  color: #877856;
+  font-size: 1.06rem;
+}
+.alertTable {
+  border-collapse: collapse;
+  margin-bottom: 1.7rem;
+  width: 100%;
+  font-size: 1.09rem;
+}
+.alertTable th, .alertTable td {
+  padding: 8px 18px 8px 5px;
+}
+.alertTable th {
+  color: #8e7a45;
+  font-weight: 900;
+  font-size: 1.07rem;
+  letter-spacing: .15px;
+  text-align: left;
+}
+.campoAlert {
+  font-weight: 600;
+  color: #a29453;
+}
+.antesAlert {
+  color: #c2b184;
+  font-weight: 600;
+}
+.despuesAlert {
+  color: #399c36;
+  font-weight: 800;
+}
+.alertCloseBtn {
+  background: linear-gradient(92deg, #b88d4a 80%, #ad7e22 100%);
+  color: #fff; font-size: 1.11rem; font-weight: 700;
+  border: none; border-radius: 8px;
+  padding: 10px 34px; cursor: pointer; margin-top: 8px;
+  letter-spacing: .3px;
+  box-shadow: 0 2px 9px 0 rgba(196,155,61,0.07);
+  transition: background 0.13s;
+  float: right;
+}
+.alertCloseBtn:hover {
+  background: linear-gradient(88deg, #ad7e22 90%, #b88d4a 100%);
+}

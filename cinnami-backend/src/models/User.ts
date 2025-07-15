@@ -9,12 +9,14 @@ export interface IUser extends Document {
   role: "admin" | "docente";
   firstName: string;
   lastName: string;
-  cardId: string; // <-- Aquí guardas el UID de la tarjeta, NO el ObjectId
+  cardId: string; //Aqui guardas el UID de la tarjeta, NO el ObjectId
   status: boolean;
   doorOpenReminderMinutes: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   lastLogin?: Date;
+  resetPasswordToken?: string; // Token para restablecer contraseña
+  resetPasswordExpires?: Date; // Fecha de expiración del token
 }
 
 // Esquema de Mongoose
@@ -71,6 +73,12 @@ const userSchema = new Schema<IUser>(
     lastLogin: { 
         type: Date 
     },
+     resetPasswordToken: {
+      type: String
+    },
+    resetPasswordExpires: {
+      type: Date
+    }
   },
   {
     timestamps: true, // agrega createdAt y updatedAt automáticamente
