@@ -22,10 +22,15 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Acceso no autorizado' });
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        return res.status(500).json({ message: "JWT_SECRET no está definido en el entorno" });
+    }
+
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
-        req.user = decoded as any; // Aquí se agrega todo el payload
-        req.userId = (decoded as any).userId || (decoded as any)._id; // por compatibilidad
+        const decoded = jwt.verify(token, jwtSecret);
+        req.user = decoded as any; 
+        req.userId = (decoded as any).userId || (decoded as any)._id; 
         next();
     } catch (error) {
         res.status(403).json({ message: 'Token inválido o expirado, Se le recomienda volver a iniciar sesión' });

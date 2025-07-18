@@ -1,13 +1,13 @@
 import { Schema, model, Document, Types } from "mongoose";
 
-// Interface que coincide con tu estructura de BD
 export interface ICard extends Document {
   _id: Types.ObjectId;
-  uid: string;           // Identificador único de la tarjeta
-  state: boolean;        // true = activa, false = inactiva
-  issueDate: Date;       // Fecha de emisión
-  disabledAt?: Date;     // Fecha de desactivación (opcional)
-  assignedTo?: Types.ObjectId | null; // ID del usuario asignado (opcional)
+  uid: string;          
+  state: boolean;       
+  issueDate: Date;       
+  disabledAt?: Date;     
+  assignedTo?: Types.ObjectId | null; 
+  permanentBlocked?: boolean;
 }
 
 const CardSchema = new Schema<ICard>({
@@ -35,7 +35,11 @@ const CardSchema = new Schema<ICard>({
   assignedTo: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    default: null    // <= Importante: null, no undefined
+    default: null    
+  },
+  permanentBlocked: { 
+    type: Boolean, 
+    default: false 
   }
 }, {
   timestamps: true,

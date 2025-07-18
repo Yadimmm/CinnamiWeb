@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./ModalLogout.module.css";
 
+// MoodalLogout component
 export default function ModalLogout({ visible, onCancel, onConfirm }) {
   if (!visible) return null;
   return (

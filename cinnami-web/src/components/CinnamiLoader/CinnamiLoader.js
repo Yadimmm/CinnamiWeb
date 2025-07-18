@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './CinnamiLoader.module.css';
 import logoCinnami from '../../assets/logos/CINNAMILOGO.png';
 
+// CinnamiLoader component
 export default function CinnamiLoader({ text = "Cargando..." }) {
   return (
     <div className={styles.container}>

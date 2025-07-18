@@ -9,6 +9,7 @@ import { GiExitDoor } from "react-icons/gi";
 import { IoCardOutline } from "react-icons/io5";
 import { LuHistory } from "react-icons/lu";
 
+// NavigationMenu component
 export default function NavigationMenu({ userType, onLogoutClick }) {
   const [menuActive, setMenuActive] = useState(false);
   const location = useLocation();

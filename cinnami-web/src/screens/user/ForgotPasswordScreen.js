@@ -4,7 +4,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import logoCinnami from "../../assets/logos/CINNAMILOGO.png";
 import globalstyles from "../../styles/globalStyles.module.css";
 import { useLoader } from "../../context/LoaderContext"; // <<--- LOADER GLOBAL
-
+// Pantalla de recuperación de contraseña
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -12,12 +12,12 @@ export default function ForgotPasswordScreen() {
   const navigate = useNavigate();
 
   const { showLoader, hideLoader } = useLoader(); // <<--- LOADER GLOBAL
-
+// Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccessMsg("");
     setErrorMsg("");
-    showLoader("Enviando correo..."); // <-- Mostrar loader
+    showLoader("Enviando correo..."); 
     try {
       const res = await fetch("http://localhost:3000/api/auth/forgot-password", {
         method: "POST",
@@ -33,7 +33,7 @@ export default function ForgotPasswordScreen() {
     } catch (err) {
       setErrorMsg("Hubo un error de conexión.");
     } finally {
-      hideLoader(); // <-- SIEMPRE oculta el loader al final
+      hideLoader(); 
     }
   };
 

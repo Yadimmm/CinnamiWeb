@@ -7,23 +7,23 @@ import { IoLockClosedOutline } from "react-icons/io5";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { LuEyeOff } from "react-icons/lu";
 import { login, getUserProfile } from '../services/apiService';
-import { useLoader } from '../context/LoaderContext'; // <-- Agrega esto
+import { useLoader } from '../context/LoaderContext'; 
 
 export default function LoginScreen({ setRole, navigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  // const [loading, setLoading] = useState(false); // Ya NO USAMOS esto
 
-  const { showLoader, hideLoader } = useLoader(); // <-- Usamos el loader global
+
+  const { showLoader, hideLoader } = useLoader(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    // setLoading(true); // Ya no lo usamos
+    
 
-    showLoader("Ingresando..."); // <-- Activa el loader global
+    showLoader("Ingresando..."); 
 
     try {
       const result = await login(email, password);
@@ -49,7 +49,7 @@ export default function LoginScreen({ setRole, navigate }) {
               localStorage.setItem('user', JSON.stringify(updatedUser));
             }
           } catch {
-            // No actualiza pero sigue el flujo
+            
           }
         }
 
@@ -69,7 +69,7 @@ export default function LoginScreen({ setRole, navigate }) {
       setError(err.message || "Credenciales incorrectas");
     } finally {
       hideLoader(); // <-- Oculta el loader global
-      // setLoading(false); // Ya no lo usamos
+      
     }
   };
 
@@ -85,7 +85,7 @@ export default function LoginScreen({ setRole, navigate }) {
             <div className={styles.infoContacto}>Smart solutions for a connected world</div>
           </div>
           <div className={styles.infoContacto}>
-            contacto@cinnami.com | (618) 456-7890
+            cinnami.noreply@gmail.com | (618) 222-2815
           </div>
         </div>
       </header>
@@ -116,7 +116,7 @@ export default function LoginScreen({ setRole, navigate }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  // disabled={loading}
+                  
                 />
               </div>
               <div className={styles.campoInput}>
@@ -128,7 +128,7 @@ export default function LoginScreen({ setRole, navigate }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  // disabled={loading}
+                  
                 />
                 <button 
                   type="button" 
@@ -147,7 +147,7 @@ export default function LoginScreen({ setRole, navigate }) {
               <button 
                 type="submit"
                 className={styles.botonLogin}
-                // disabled={loading}
+                
               >
                 Iniciar Sesión
               </button>

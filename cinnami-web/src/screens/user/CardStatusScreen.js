@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import stylescardstatus from './CardStatusScreen.module.css';
 import globalstyles from '../../styles/globalStyles.module.css';
-import { useLoader } from "../../context/LoaderContext"; // Loader global
+import { useLoader } from "../../context/LoaderContext"; 
 
-// MODAL ALERTA personalizada
+// Modal Alerta 
 function AlertModal({ message, onClose, type = 'info' }) {
   return (
     <div className={stylescardstatus.alertOverlay}>
@@ -43,7 +43,7 @@ function AlertModal({ message, onClose, type = 'info' }) {
   );
 }
 
-// MODAL DE CONFIRMACIÓN personalizada
+// Moda confirmacion
 function ConfirmModal({ title, body, onConfirm, onCancel }) {
   return (
     <div className={stylescardstatus.alertOverlay}>
@@ -179,7 +179,7 @@ export default function CardStatusScreen({ onLogoutClick }) {
     hideLoader();
   };
 
-  // Bloqueo permanente (requiere confirmación y endpoint)
+  // Bloqueo permanente 
   const reportLoss = () => setShowConfirm(true);
 
   const handlePermanentBlock = async () => {

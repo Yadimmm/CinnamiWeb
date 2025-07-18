@@ -439,4 +439,111 @@
     opacity: 1;
     transform: translateY(0);
   }
+}/* --- BARRA DE BÚSQUEDA Y BOTÓN (IGUAL QUE USUARIOS) --- */
+.searchBar {
+  position: relative;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 20px 14px 45px;
+  border: 1px solid var(--borde-claro);
+  border-radius: 12px;
+  font-size: 15px;
+  background: var(--fondo-claro);
+  color: var(--texto-principal);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-cobre-acento);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.08);
+}
+
+.searchInput::placeholder {
+  color: var(--texto-claro);
+  font-style: normal;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-claro);
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Botón de agregar */
+.addButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0; /* O el que uses en usuarios */
+  flex: 0 0 auto;
+}
+
+.addButton {
+  background: linear-gradient(135deg, var(--color-cobre-acento), var(--color-dorado-acento));
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.2);
+}
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(184, 115, 51, 0.3);
+}
+
+/* --- RESPONSIVE (OPCIONAL) --- */
+@media (max-width: 600px) {
+  .searchBar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .addButtonContainer {
+    justify-content: stretch;
+  }
+}
+.stickyToolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20; 
+  background: var(--fondo-tarjeta);
+  padding-top: 16px; /* opcional */
+  padding-bottom: 8px; /* opcional */
+  border-radius: 16px 16px 0 0; 
+}
+/* Barra sticky (igual que en usuarios, responsiva y elegante) */
+.stickyToolbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+
+@media (min-width: 600px) {
+  .stickyToolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }

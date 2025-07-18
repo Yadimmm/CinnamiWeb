@@ -3,8 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import logoCinnami from "../../assets/logos/CINNAMILOGO.png";
 import globalstyles from "../../styles/globalStyles.module.css";
-import { useLoader } from "../../context/LoaderContext"; // <-- IMPORTANTE
-
+import { useLoader } from "../../context/LoaderContext"; 
+// Pantalla de restablecimiento de contraseña
 export default function ResetPasswordScreen() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -17,7 +17,7 @@ export default function ResetPasswordScreen() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  const { showLoader, hideLoader } = useLoader(); // <-- LOADER GLOBAL
+  const { showLoader, hideLoader } = useLoader(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +32,7 @@ export default function ResetPasswordScreen() {
       setErr("Las contraseñas no coinciden.");
       return;
     }
-    showLoader("Restableciendo contraseña..."); // <--- USAR LOADER
+    showLoader("Restableciendo contraseña..."); 
     try {
       const res = await fetch("http://localhost:3000/api/auth/reset-password", {
         method: "POST",
@@ -43,7 +43,7 @@ export default function ResetPasswordScreen() {
       if (res.ok) {
         setMsg("¡Contraseña restablecida exitosamente! Redirigiendo al inicio...");
         setTimeout(() => {
-          hideLoader(); // OCULTAR LOADER ANTES DE NAVEGAR
+          hideLoader();
           navigate("/"); 
         }, 2000);
       } else {
@@ -56,10 +56,8 @@ export default function ResetPasswordScreen() {
     }
   };
 
-  // ... El resto del código (todo igual que ya tienes)
-  // Solo quitamos todo lo de "loading", y el botón NO usa loading
 
-  // Reutilizable para iconos de ojo
+  // iconos de ojo
   const iconStyle = {
     position: "absolute",
     right: 11,

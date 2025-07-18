@@ -3,15 +3,15 @@ import { Card } from '../models/Card';
 import { Types } from 'mongoose';
 import { User } from '../models/User';
 
-//Crear nueva tarjeta (solo UID)
+// Crear nueva tarjeta solo UID
 export const createCard = async (req: Request, res: Response) => {
   try {
     const { uid } = req.body;
 
-    // Validar que se envió el UID
-    if (!uid) {
+    // Validar que se envió el UID y es string no vacío
+    if (typeof uid !== 'string' || !uid.trim()) {
       return res.status(400).json({
-        message: 'El UID de la tarjeta es requerido'
+        message: 'El UID de la tarjeta es requerido y debe ser un string'
       });
     }
 
@@ -23,7 +23,7 @@ export const createCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Crear la nueva tarjeta
+    // Crea nueva tarjeta
     const newCard = new Card({
       uid: uid.toUpperCase(),
       state: true,
@@ -31,7 +31,7 @@ export const createCard = async (req: Request, res: Response) => {
       disabledAt: undefined,
       assignedTo: undefined
     });
-
+    // Guarda la tarjeta en la base de datos
     const savedCard = await newCard.save();
 
     return res.status(201).json({ 
@@ -66,7 +66,7 @@ export const getAllCards = async (req: Request, res: Response) => {
   }
 };
 
-///api/cards/available - Obtener tarjetas disponibles para asignar
+// Obtener tarjetas disponibles para asignar
 export const getAvailableCards = async (req: Request, res: Response) => {
   try {
     const availableCards = await Card.find({
@@ -86,12 +86,11 @@ export const getAvailableCards = async (req: Request, res: Response) => {
   }
 };
 
-// GET /api/cards/:id - Obtener tarjeta específica
+// Obtener tarjeta específica
 export const getCardById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -118,27 +117,26 @@ export const getCardById = async (req: Request, res: Response) => {
   }
 };
 
-// PUT /api/cards/:id - Editar UID de tarjeta
+// Edita UID de tarjeta
 export const updateCardUID = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { uid } = req.body;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
       });
     }
 
-    // Validar que se envió el nuevo UID
-    if (!uid) {
+    // Validar que uid es string no vacío
+    if (typeof uid !== 'string' || !uid.trim()) {
       return res.status(400).json({
-        message: 'El nuevo UID es requerido'
+        message: 'El nuevo UID es requerido y debe ser un string'
       });
     }
 
-    // Verificar que no exista otra tarjeta con ese UID
+    // Verifica que no exista otra tarjeta con ese UID
     const existingCard = await Card.findOne({ 
       uid: uid.toUpperCase(),
       _id: { $ne: id }
@@ -150,7 +148,7 @@ export const updateCardUID = async (req: Request, res: Response) => {
       });
     }
 
-    // Actualizar la tarjeta
+    // Actualiza la tarjeta
     const updatedCard = await Card.findByIdAndUpdate(
       id,
       { uid: uid.toUpperCase() },
@@ -174,12 +172,11 @@ export const updateCardUID = async (req: Request, res: Response) => {
   }
 };
 
-//Deshabilitar tarjeta
+// Deshabilita la tarjeta
 export const disableCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -194,7 +191,7 @@ export const disableCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Cambiar el estado directamente
+    // Cambia el estado 
     card.state = false;
     card.disabledAt = new Date();
     const updatedCard = await card.save();
@@ -210,12 +207,11 @@ export const disableCard = async (req: Request, res: Response) => {
   }
 };
 
-// Rehabilitar tarjeta
+// Rehabilita la tarjeta
 export const enableCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -230,7 +226,7 @@ export const enableCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Rehabilitar tarjeta
+    // Cambia el estado a activa
     card.state = true;
     card.disabledAt = undefined;
     const updatedCard = await card.save();
@@ -246,13 +242,11 @@ export const enableCard = async (req: Request, res: Response) => {
   }
 };
 
-//ELIMINA TARJETAS
+// Elimina tarjeta
 export const deleteCard = async (req: Request, resp: Response) =>{
-
   try {
     const { id } = req.params;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return resp.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -278,17 +272,12 @@ export const deleteCard = async (req: Request, resp: Response) =>{
   }
 }
 
-// ASIGNAR TARJETA (CAMBIO AQUÍ)
-/**
- * Este endpoint ahora permite asignar o DESASIGNAR una tarjeta.
- * Si el frontend envía { userId: null }, la tarjeta se desasigna.
- */
+// Asigna tarjeta a un usuario
 export const assignCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
 
-    // Validar ObjectId de la tarjeta
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -303,7 +292,7 @@ export const assignCard = async (req: Request, res: Response) => {
       });
     }
 
-    // --- CAMBIO: Permite desasignar ---
+    // Permite desasignar si userId no viene o es null
     if (!userId) {
       card.assignedTo = null;
       card.state = true;
@@ -314,16 +303,15 @@ export const assignCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Validar ObjectId del usuario si userId está presente
-    if (!Types.ObjectId.isValid(userId)) {
+    if (typeof userId !== 'string' || !Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         message: 'ID de usuario inválido'
       });
     }
 
-    // Asignar tarjeta
+    // Asigna la tarjeta
     card.assignedTo = new Types.ObjectId(userId);
-    card.state = true; // Si usas "false" para tarjetas ocupadas, cámbialo aquí según tu lógica
+    card.state = true;
     const updatedCard = await card.save();
 
     res.status(200).json({
@@ -337,12 +325,11 @@ export const assignCard = async (req: Request, res: Response) => {
   }
 };
 
-//Desasignar tarjeta (puedes eliminar este endpoint si ya no lo necesitas)
+// Desasigna tarjeta 
 export const unassignCard = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Validar ObjectId
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: 'ID de tarjeta inválido'
@@ -357,7 +344,6 @@ export const unassignCard = async (req: Request, res: Response) => {
       });
     }
 
-    // Desasignar tarjeta
     card.assignedTo = null;
     const updatedCard = await card.save();
 
@@ -372,10 +358,15 @@ export const unassignCard = async (req: Request, res: Response) => {
   }
 };
 
-// Desasignar tarjeta desde el usuario
+// Desasigna la tarjeta desde el usuario
 export const releaseUserCard = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
+
+    if (typeof userId !== 'string' || !Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'ID de usuario inválido' });
+    }
+
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
@@ -386,12 +377,46 @@ export const releaseUserCard = async (req: Request, res: Response) => {
         card.assignedTo = null;
         await card.save();
       }
-      // Libera la tarjeta en el usuario (sin validación de Mongoose)
+      // Libera la tarjeta en el usuario
       await User.updateOne({ _id: userId }, { $set: { cardId: null } });
     }
 
     res.status(200).json({ message: 'Tarjeta liberada correctamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al liberar tarjeta', error });
+  }
+};
+// Bloqueo permanente de tarjeta
+export const permanentBlockCard = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: 'ID de tarjeta inválido'
+      });
+    }
+
+    const card = await Card.findById(id);
+
+    if (!card) {
+      return res.status(404).json({
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    card.permanentBlocked = true; 
+    card.state = false;             
+    card.disabledAt = new Date();
+    await card.save();
+
+    res.status(200).json({
+      message: 'Tarjeta bloqueada permanentemente',
+      card
+    });
+
+  } catch (error) {
+    console.error('Error en permanentBlockCard:', error);
+    res.status(500).json({ message: 'Error al bloquear permanentemente la tarjeta', error });
   }
 };

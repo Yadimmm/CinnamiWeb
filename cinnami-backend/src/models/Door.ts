@@ -1,10 +1,11 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IDoor extends Document {
-  nombre: string;     // nombre de la puerta o punto de acceso
-  edificio: string;   // edificio al que pertenece
+  nombre: string;        
+  edificio: string;      
   descripcion?: string;
   activa: boolean;
+  state: "open" | "close"; 
 }
 
 const DoorSchema = new Schema<IDoor>({
@@ -22,6 +23,12 @@ const DoorSchema = new Schema<IDoor>({
   activa: { 
     type: Boolean, 
     default: true 
+  },
+  state: {
+    type: String,
+    enum: ["open", "close"],
+    required: true,
+    default: "close"
   }
 });
 

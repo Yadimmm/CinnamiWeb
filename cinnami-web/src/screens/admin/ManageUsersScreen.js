@@ -10,17 +10,19 @@ import {
   FaArrowRight,
   FaPlus,
   FaEye,
-  FaEyeSlash
+  FaEyeSlash,
+  FaUserEdit,
+  FaUserLock,
+  FaUserCheck
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { useLoader } from "../../context/LoaderContext"; // <--- LOADER GLOBAL
+import { useLoader } from "../../context/LoaderContext";
 
-// MODAL DE CAMBIO DE USUARIO
+// Modal de cambio de usuario
 function ChangesAlert({ oldData, newData, allCards, onClose }) {
   const prettyLabel = {
     username: 'Usuario',
     email: 'Email',
-    password: 'Contraseña',
     role: 'Rol',
     firstName: 'Nombre(s)',
     lastName: 'Apellido(s)',
@@ -32,7 +34,7 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
       if (newData[key]) {
         changedFields.push(
           <tr key={key}>
-            <td>{prettyLabel[key]}</td>
+            <td>Contraseña</td>
             <td>-</td>
             <td>******</td>
           </tr>
@@ -92,7 +94,7 @@ function ChangesAlert({ oldData, newData, allCards, onClose }) {
   );
 }
 
-// MODAL DE CONFIRMACIÓN VISUAL
+// Modal de confirmación de deshabilitar/habilitar usuario
 function ConfirmDisableModal({ visible, user, onCancel, onConfirm }) {
   if (!visible || !user) return null;
   return (
@@ -111,18 +113,24 @@ function ConfirmDisableModal({ visible, user, onCancel, onConfirm }) {
             Cancelar
           </button>
           <button
-            className={user.status ? styles.disableUserButton : styles.enableUserButton}
+            className={user.status
+              ? `${styles.saveButton} ${styles.disableUserButton}`
+              : `${styles.saveButton} ${styles.enableUserButton}`
+            }
             style={{ minWidth: 120, fontWeight: 700, fontSize: 15, letterSpacing: '.5px', border: 'none' }}
             onClick={() => onConfirm(user)}
           >
-            {user.status ? 'Deshabilitar' : 'Habilitar'}
+            {user.status
+              ? (<><FaUserLock style={{ marginRight: 7 }} />Deshabilitar</>)
+              : (<><FaUserCheck style={{ marginRight: 7 }} />Habilitar</>)
+            }
           </button>
         </div>
       </div>
     </div>
   );
 }
-
+// Datos iniciales del formulario
 const initialFormData = {
   username: '',
   email: '',
@@ -133,7 +141,7 @@ const initialFormData = {
   surnames: '',
   uid: '',
 };
-
+// Pantalla de gestión de usuarios
 export default function ManageUsersScreen({ onLogoutClick }) {
   const { showLoader, hideLoader } = useLoader();
 
@@ -155,7 +163,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
   const [confirmDisableModal, setConfirmDisableModal] = useState(false);
   const [userToDisable, setUserToDisable] = useState(null);
 
-  // --- Carga usuarios y tarjetas (con loader) ---
+  //Carga usuarios y tarjetas
   const loadUsers = async () => {
     showLoader("Cargando usuarios...");
     try {
@@ -192,7 +200,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     // eslint-disable-next-line
   }, []);
 
-  // Paginación y filtros (igual)
+  // Paginación y filtros 
   const getUsersPerPage = () => window.innerWidth >= 1400 ? 9 : window.innerWidth >= 1024 ? 6 : 5;
   const [usersPerPage, setUsersPerPage] = useState(getUsersPerPage());
   useEffect(() => {
@@ -239,14 +247,13 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   const handleRoleSelect = (role) => setFormData(prev => ({ ...prev, role }));
 
-  // -------- Validación modificada ----------
+  // Validación del formulario
   const validateForm = () => {
     if (!formData.username.trim()) return alert('Por favor ingrese un nombre de usuario');
     if (!formData.email.trim()) return alert('Por favor ingrese un email válido');
     if (!formData.names.trim()) return alert('Por favor ingrese el nombre(s)');
     if (!formData.surnames.trim()) return alert('Por favor ingrese los apellidos');
     if (!formData.uid) return alert('Por favor selecciona una tarjeta');
-    // Solo pedir contraseña si es agregar
     if (modalType === 'add') {
       if (!formData.password.trim() || !formData.confirmPassword.trim())
         return alert('Debe ingresar y confirmar la contraseña');
@@ -258,11 +265,11 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   function getCardUID(cardId) {
     if (!cardId) return "Sin asignar";
-    const card = allCards.find(c => c._id === cardId);
+    const card = allCards.find(c => c._id === cardId || c.uid === cardId);
     return card ? card.uid : "Sin asignar";
   }
 
-  // -------- Submit con loader y sin edición de contraseña ----------
+  //Enviar datos y sin edición de contraseña 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -423,13 +430,13 @@ export default function ManageUsersScreen({ onLogoutClick }) {
 
   const closeUserDetailModal = () => setSelectedUser(null);
 
-  // NUEVO: Muestra modal confirmación y setea usuario
+  //Muestra modal confirmación y setea usuario
   const handleDisableUser = (user) => {
     setUserToDisable(user);
     setConfirmDisableModal(true);
   };
 
-  // NUEVO: Lógica solo si confirman
+  //Lógica solo si confirman
   const confirmDisableUser = async (user) => {
     setConfirmDisableModal(false);
     setUserToDisable(null);
@@ -505,7 +512,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
     }
     hideLoader();
   };
-
+// Editar usuario
   const handleEditUser = (user) => {
     setModalType('edit');
     setEditingUser(user);
@@ -546,22 +553,26 @@ export default function ManageUsersScreen({ onLogoutClick }) {
             <h1 className={globalstyles.title}>Administración de usuarios</h1>
           </header>
           <div className={styles.panel}>
-            <div className={styles.searchBar}>
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="Buscar por usuario, correo, nombre o apellidos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <span className={styles.searchIcon}><FaSearch /></span>
+            <div className={styles.stickyToolbar}>
+              <div className={styles.searchBar}>
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Buscar por usuario, correo, nombre o apellidos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className={styles.searchIcon}><FaSearch /></span>
+              </div>
+              <div className={styles.addButtonContainer}>
+                <button onClick={openAddModal} className={styles.addButton}>
+                  <FaPlus style={{ marginRight: '8px' }} />
+                  Agregar nuevo usuario
+                </button>
+              </div>
             </div>
-            <div className={styles.addButtonContainer}>
-              <button onClick={openAddModal} className={styles.addButton}>
-                <FaPlus style={{ marginRight: '8px' }} />
-                Agregar nuevo usuario
-              </button>
-            </div>
+        
+
             <div className={styles.usersGrid}>
               {currentUsers.map(user => (
                 <div
@@ -769,16 +780,24 @@ export default function ManageUsersScreen({ onLogoutClick }) {
               </div>
               <div className={styles.modalActions}>
                 <button className={styles.saveButton} onClick={() => handleEditUser(selectedUser)}>
+                  <FaUserEdit style={{ marginRight: 7 }} />
                   Editar
                 </button>
-                {/* Botón para deshabilitar/habilitar */}
                 <button
-                  className={selectedUser.status ? styles.disableUserButton : styles.enableUserButton}
+                  className={
+                    selectedUser.status
+                      ? `${styles.saveButton} ${styles.disableUserButton}`
+                      : `${styles.saveButton} ${styles.enableUserButton}`
+                  }
                   onClick={() => handleDisableUser(selectedUser)}
                 >
-                  {selectedUser.status ? "Deshabilitar" : "Habilitar"}
+                  {selectedUser.status
+                    ? (<><FaUserLock style={{ marginRight: 7 }} />Deshabilitar</>)
+                    : (<><FaUserCheck style={{ marginRight: 7 }} />Habilitar</>)
+                  }
                 </button>
                 <button className={styles.cancelButton} onClick={closeUserDetailModal}>
+                  <FaTimes style={{ marginRight: 7 }} />
                   Cerrar
                 </button>
               </div>
@@ -786,7 +805,7 @@ export default function ManageUsersScreen({ onLogoutClick }) {
           </div>
         </div>
       )}
-      {/* --- Modal de confirmación --- */}
+      {/*Modal de confirmación*/}
       <ConfirmDisableModal
         visible={confirmDisableModal}
         user={userToDisable}

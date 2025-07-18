@@ -1,6 +1,5 @@
 import { Schema, model, Document, Types } from "mongoose";
 
-// Interfaz TypeScript para tipar el usuario
 export interface IUser extends Document {
   _id: Types.ObjectId;
   username: string;
@@ -9,17 +8,16 @@ export interface IUser extends Document {
   role: "admin" | "docente";
   firstName: string;
   lastName: string;
-  cardId: string; //Aqui guardas el UID de la tarjeta, NO el ObjectId
+  cardId: string; 
   status: boolean;
   doorOpenReminderMinutes: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   lastLogin?: Date;
-  resetPasswordToken?: string; // Token para restablecer contraseña
-  resetPasswordExpires?: Date; // Fecha de expiración del token
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date; 
 }
 
-// Esquema de Mongoose
 const userSchema = new Schema<IUser>(
   {
     username: { 
@@ -50,10 +48,10 @@ const userSchema = new Schema<IUser>(
         required: true 
     },
     cardId: { 
-        type: String,     // UID de la tarjeta
-        required: true
-        // unique: true   // <-- Quita esto, pueden reasignar tarjetas
-    },
+        type: String,     
+        required: false,
+        default: null
+     },
     status: { 
         type: Boolean, 
         default: true 
@@ -81,9 +79,8 @@ const userSchema = new Schema<IUser>(
     }
   },
   {
-    timestamps: true, // agrega createdAt y updatedAt automáticamente
+    timestamps: true, 
   }
 );
 
-// exporta el modelo
 export const User = model<IUser>("User", userSchema);

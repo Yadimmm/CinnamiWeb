@@ -3,15 +3,16 @@ import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import styles from './ManageCardsScreen.module.css';
 import globalstyles from '../../styles/globalStyles.module.css';
 import { toast } from 'react-toastify';
-import { useLoader } from "../../context/LoaderContext"; // <-- Loader global
+import { useLoader } from "../../context/LoaderContext";
+import { FaSearch } from 'react-icons/fa';
 
-// MODAL DE CONFIRMACIÓN CON COLORES CÁLIDOS
+// Modal de confirmación 
 function ConfirmModal({ open, title, message, onConfirm, onCancel }) {
   if (!open) return null;
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10002,
-      background: 'rgba(224,169,47,0.13)', // dorado translúcido
+      background: 'rgba(224,169,47,0.13)',
       display: 'flex',
       alignItems: 'center', justifyContent: 'center'
     }}>
@@ -53,21 +54,22 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel }) {
     </div>
   );
 }
-
+// Pantalla de gestión de tarjetas
 export default function ManageCardsScreen({ onLogoutClick }) {
   const [cards, setCards] = useState([]);
   const [filteredCards, setFilteredCards] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCard, setNewCard] = useState({ cardId: '' });
-
   const [confirm, setConfirm] = useState({ open: false, type: '', cardId: null, cardState: null });
 
-  const { showLoader, hideLoader } = useLoader(); // <-- loader global
+  const { showLoader, hideLoader } = useLoader();
 
   const getToken = () => localStorage.getItem('token');
 
-  const fetchCards = useCallback(async () => {
+  // fetchCards solo carga la lista; loader solo en la carga inicial
+  const fetchCards = useCallback(async (showLoading = true) => {
+    if (showLoading) showLoader("Cargando tarjetas...");
     try {
       const token = getToken();
       const res = await fetch('http://localhost:3000/api/auth/cards', {
@@ -84,10 +86,15 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       toast.error('Error de red o del servidor');
       setCards([]);
       setFilteredCards([]);
+    } finally {
+      if (showLoading) hideLoader();
     }
-  }, []);
+  }, [showLoader, hideLoader]);
 
-  useEffect(() => { fetchCards(); }, [fetchCards]);
+  useEffect(() => {
+    fetchCards(); // solo la primera vez muestra loader
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const filtered = cards.filter(card =>
@@ -110,10 +117,9 @@ export default function ManageCardsScreen({ onLogoutClick }) {
   };
   const handleCancel = () => setConfirm({ open: false, type: '', cardId: null, cardState: null });
 
-  // Bloquear/desbloquear tarjeta
+  // Bloquear/desbloquear tarjeta: loader solo durante acción, fetchCards sin loader
   const toggleCardStatus = async (cardId, state) => {
-    const action = state ? 'bloquear' : 'desbloquear';
-    showLoader(action === "bloquear" ? "Bloqueando tarjeta..." : "Desbloqueando tarjeta...");
+    showLoader(state ? "Bloqueando tarjeta..." : "Desbloqueando tarjeta...");
     try {
       const token = getToken();
       const url = state
@@ -125,17 +131,14 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(
-          action === 'bloquear' ? 'Tarjeta bloqueada exitosamente' : 'Tarjeta desbloqueada exitosamente'
-        );
-        hideLoader(); // OCULTA loader ANTES de refrescar la lista
-        fetchCards();
+        toast.success(state ? 'Tarjeta bloqueada exitosamente' : 'Tarjeta desbloqueada exitosamente');
+        await fetchCards(false); 
       } else {
         toast.error(data.message || 'No se pudo cambiar el estado');
-        hideLoader();
       }
     } catch (err) {
       toast.error('Error al cambiar el estado');
+    } finally {
       hideLoader();
     }
   };
@@ -152,14 +155,13 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       const data = await res.json();
       if (res.ok) {
         toast.success("Tarjeta eliminada exitosamente");
-        hideLoader();
-        fetchCards();
+        await fetchCards(false);
       } else {
         toast.error(data.message || 'No se pudo eliminar la tarjeta');
-        hideLoader();
       }
     } catch (err) {
       toast.error('Error al eliminar la tarjeta');
+    } finally {
       hideLoader();
     }
   };
@@ -184,15 +186,14 @@ export default function ManageCardsScreen({ onLogoutClick }) {
       const data = await res.json();
       if (res.ok) {
         toast.success("Tarjeta creada exitosamente");
-        hideLoader();
         closeModal();
-        fetchCards();
+        await fetchCards(false);
       } else {
         toast.error(data.message || 'No se pudo registrar la tarjeta');
-        hideLoader();
       }
     } catch (err) {
       toast.error('Error al registrar la tarjeta');
+    } finally {
       hideLoader();
     }
   };
@@ -212,21 +213,26 @@ export default function ManageCardsScreen({ onLogoutClick }) {
         <header className={globalstyles.header}>
           <h1 className={globalstyles.title}>Gestión de tarjetas</h1>
         </header>
-        <div className={styles.barraHerramientas}>
-          <div className={styles.campoBusqueda}>
+
+        {/* BARRA STICKY */}
+        <div className={styles.stickyToolbar}>
+          <div className={styles.searchBar}>
             <input
               type="text"
-              className={styles.inputBusqueda}
+              className={styles.searchInput}
               placeholder="Buscar tarjeta o usuario..."
               value={searchTerm}
               onChange={handleSearch}
             />
-            <span className={styles.iconoBusqueda}>🔍</span>
+            <span className={styles.searchIcon}><FaSearch /></span>
           </div>
-          <button className={styles.botonRegistrar} onClick={openModal}>
-            Registrar Nueva Tarjeta
-          </button>
+          <div className={styles.addButtonContainer}>
+            <button className={styles.addButton} onClick={openModal}>
+              + Registrar Nueva Tarjeta
+            </button>
+          </div>
         </div>
+        {/* FIN BARRA STICKY */}
 
         <div className={styles.cuadriculaTarjetas}>
           {filteredCards.map(card => (
@@ -288,7 +294,7 @@ export default function ManageCardsScreen({ onLogoutClick }) {
         </div>
       )}
 
-      {/* Modal de confirmación bonito */}
+      {/* Modal de confirmación*/}
       <ConfirmModal
         open={confirm.open}
         title={

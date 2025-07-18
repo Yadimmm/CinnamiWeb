@@ -3,13 +3,48 @@ import NavigationMenu from '../../components/Navigation/NavigationMenu';
 import styles from './AdminHomeScreen.module.css';
 import ModalLogout from '../../components/logout/ModalLogout';
 import { Eye, User, Mail, CreditCard, DoorClosed, UserCheck, X } from 'lucide-react';
-
-import anaGomezFoto from "../../assets/users/anagomez.jpg";
-import luisTorresFoto from "../../assets/users/luistorres.jpg";
-import mariaLopezFoto from "../../assets/users/marialopez.png";
 import javierVazquezFoto from "../../assets/users/userfoto2.png";
+import { safeImgSrc } from '../../utils/safeImgSrc';
 
-// --- Utilidad para formato de fecha ---
+//Utilidad para sanitizar strings y prevenir XSS
+function sanitizeString(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[<>&"']/g, function(match) {
+    const escapeMap = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    };
+    return escapeMap[match];
+  });
+}
+
+//Utilidad para validar y parsear JSON de forma segura
+function safeJSONParse(jsonString, defaultValue = null) {
+  try {
+    if (!jsonString || typeof jsonString !== 'string') return defaultValue;
+    const parsed = JSON.parse(jsonString);
+    return parsed;
+  } catch (error) {
+    console.warn('Error parsing JSON:', error);
+    return defaultValue;
+  }
+}
+
+//Utilidad para obtener valores seguros del localStorage
+function getSafeLocalStorageItem(key, defaultValue = null) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? item : defaultValue;
+  } catch (error) {
+    console.warn(`Error accessing localStorage key "${key}":`, error);
+    return defaultValue;
+  }
+}
+
+//Utilidad para formato de fecha
 function formatDate(dateString) {
   if (!dateString) return 'Nunca';
   const now = new Date();
@@ -27,35 +62,41 @@ function formatDate(dateString) {
   return date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' - ' + hora;
 }
 
-// ---------- ALERTA flotante fuera de la tarjeta ----------
+//ALERTA flotante fuera de la tarjeta
 function AlertOutside({ type, msg }) {
   let c = styles.alertaAnimada;
   if (type === "success") c += " " + styles.alertaSuccess;
   if (type === "error") c += " " + styles.alertaDanger;
   if (type === "warning") c += " " + styles.alertaWarning;
+  
+  // No sanitizamos aquí, porque msg puede ser HTML (para el temporizador)
   return (
-    <div className={c}>
-      {msg}
-    </div>
+    <div className={c} dangerouslySetInnerHTML={{ __html: msg }} />
   );
 }
 
-// ---------- Modal de confirmación para bloqueo permanente ----------
+//Modal de confirmación para bloqueo permanente
 function ConfirmModal({ onConfirm, onCancel, loading }) {
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <p style={{ fontWeight: 700, fontSize: 18, marginBottom: 11 }}>
-          ¿Bloquear permanentemente esta tarjeta?
+    <div className={styles.globalModalOverlay}>
+      <div className={styles.globalModalContent}>
+        <h2 className={styles.globalModalTitle}>¿Bloquear permanentemente esta tarjeta?</h2>
+        <p className={styles.globalModalMessage}>
+          Esta acción es <b>irreversible</b> y solo un <span style={{ color: "var(--color-cafe-principal)" }}>administrador</span> podrá restaurarla.
         </p>
-        <p style={{ marginBottom: 20, color: "#764545" }}>
-          Esta acción es irreversible y solo un administrador podrá restaurarla.
-        </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button className={styles.confirmBtn} onClick={onConfirm} disabled={loading}>
+        <div className={styles.globalModalActions}>
+          <button
+            className={styles.globalModalConfirm}
+            onClick={onConfirm}
+            disabled={loading}
+          >
             Sí, bloquear
           </button>
-          <button className={styles.cancelBtn} onClick={onCancel} disabled={loading}>
+          <button
+            className={styles.globalModalCancel}
+            onClick={onCancel}
+            disabled={loading}
+          >
             Cancelar
           </button>
         </div>
@@ -77,22 +118,18 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
     setPermBlocked(!!card?.permanentBlocked);
   }, [card]);
 
-  // --- FUNCIONA IGUAL QUE EN CardStatusUser ---
   const handleSwitch = async (e) => {
     e.stopPropagation();
     if (!card || permBlocked || loading) return;
     setLoading(true);
-    const token = localStorage.getItem('token');
-    console.log("Token:", token);
-    console.log("Card._id:", card._id);
-
+    const token = getSafeLocalStorageItem('token');
     try {
       const endpoint = active
         ? `http://localhost:3000/api/auth/cards/${card._id}/disable`
         : `http://localhost:3000/api/auth/cards/${card._id}/enable`;
       const res = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -117,10 +154,11 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
     setLoading(false);
   };
 
+  // --- MODIFICADO TEMPORIZADOR + REDIRECCIÓN ---
   const handlePermanentBlock = async () => {
     setShowConfirm(false);
     setLoading(true);
-    const token = localStorage.getItem('token');
+    const token = getSafeLocalStorageItem('token');
     try {
       const res = await fetch(
         `http://localhost:3000/api/auth/cards/${card._id}/permanent-block`,
@@ -134,7 +172,8 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
         onAlert &&
           onAlert({
             type: "error",
-            msg: "¡Tarjeta bloqueada permanentemente! Solo un administrador puede desbloquearla."
+            msg: `<b>¡Tarjeta bloqueada permanentemente!</b><br>Serás redirigido al login en <span id="redirect-timer">4</span> segundos...`,
+            autoRedirect: true
           });
         if (onStatusChange) onStatusChange({ active, permBlocked: true });
       } else {
@@ -160,6 +199,12 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
     );
   }
 
+  // Sanitizar datos del usuario para prevenir XSS
+  const sanitizedFirstName = sanitizeString(user.firstName);
+  const sanitizedLastName = sanitizeString(user.lastName);
+  const sanitizedRole = sanitizeString(user.role);
+  const sanitizedUid = sanitizeString(card.uid);
+
   return (
     <div className={styles.cardContainer3D}>
       <div
@@ -180,13 +225,13 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
           </div>
           <div className={styles.cardRowInfo}>
             <div className={styles.cardLeftInfo}>
-              <div className={styles.cardName}>{user.firstName} {user.lastName}</div>
-              <div className={styles.cardRole}>{user.role}</div>
-              <div className={styles.cardUidLabel}>UID: <span className={styles.cardUid}>{card.uid}</span></div>
+              <div className={styles.cardName}>{sanitizedFirstName} {sanitizedLastName}</div>
+              <div className={styles.cardRole}>{sanitizedRole}</div>
+              <div className={styles.cardUidLabel}>UID: <span className={styles.cardUid}>{sanitizedUid}</span></div>
             </div>
             <img
               className={styles.cardAvatar}
-              src={user.foto}
+              src={safeImgSrc(String(user.foto), javierVazquezFoto)}
               alt="user"
             />
           </div>
@@ -246,17 +291,22 @@ function AdminVirtualCard3D({ user, card, onStatusChange, onAlert }) {
   );
 }
 
-// ================== PANTALLA PRINCIPAL =====================
+//PANTALLA PRINCIPAL
 export default function AdminHomeScreen() {
-  const [alertaVisible, setAlertaVisible] = useState(true);
+  const [alertaPuertaVisible, setAlertaPuertaVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showLogout, setShowLogout] = useState(false);
   const [card, setCard] = useState(null);
   const [alerta, setAlerta] = useState(null);
 
-  // --- LEER USUARIO AUTENTICADO ---
-  let userProfile = {
+  //ESTADOS PARA BD
+  const [totalPersonas, setTotalPersonas] = useState(0);
+  const [estadoPuerta, setEstadoPuerta] = useState({ state: 'Cargando...', name: '' });
+  const [accesosRecientes, setAccesosRecientes] = useState([]);
+
+  //LEER USUARIO AUTENTICADO DE FORMA SEGURA
+  const [userProfile, setUserProfile] = useState({
     firstName: '',
     lastName: '',
     role: '',
@@ -264,28 +314,32 @@ export default function AdminHomeScreen() {
     lastLogin: '',
     foto: javierVazquezFoto,
     cardId: '',
-  };
-  try {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      userProfile = {
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        role: user.role === 'admin' ? 'Administrador' : 'Docente',
-        email: user.email || '',
-        lastLogin: formatDate(user.lastLogin),
-        foto: user.foto || javierVazquezFoto,
-        cardId: user.cardId || '',
-      };
-    }
-  } catch {}
+  });
 
-  // --- Cargar la tarjeta real desde el backend ---
+  useEffect(() => {
+    const userStr = getSafeLocalStorageItem('user');
+    if (userStr) {
+      const user = safeJSONParse(userStr, {});
+      setUserProfile({
+        firstName: sanitizeString(user.firstName || ''),
+        lastName: sanitizeString(user.lastName || ''),
+        role: user.role === 'admin' ? 'Administrador' : 'Docente',
+        email: sanitizeString(user.email || ''),
+        lastLogin: formatDate(user.lastLogin),
+        foto: safeImgSrc(user.foto, javierVazquezFoto),
+        cardId: sanitizeString(user.cardId || ''),
+      });
+    }
+  }, []);
+
+  //Cargar la tarjeta real desde el backend
   useEffect(() => {
     if (!userProfile.cardId) return;
+    const token = getSafeLocalStorageItem('token');
+    if (!token) return;
+
     fetch('http://localhost:3000/api/auth/cards', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -294,86 +348,142 @@ export default function AdminHomeScreen() {
           c => c._id === userProfile.cardId || c.uid === userProfile.cardId
         );
         setCard(found || null);
+      })
+      .catch(error => {
+        console.error('Error loading card:', error);
       });
   }, [userProfile.cardId]);
 
-  // Auto-cierra alerta flotante
+  //POLLING para recargar datos cada 5 segundos
+  useEffect(() => {
+    const token = getSafeLocalStorageItem('token');
+    if (!token) return;
+
+    const fetchData = () => {
+      // Personas ingresadas (conteo)
+      fetch('http://localhost:3000/api/auth/personcount/latest', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setTotalPersonas(data.count || 0))
+        .catch(() => setTotalPersonas(0));
+
+      // Estado de puerta
+      fetch('http://localhost:3000/api/auth/door/latest', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setEstadoPuerta({
+            state: data.state || 'desconocido',
+            name: sanitizeString(data.name || ''),
+            timestamp: data.timestamp
+          });
+
+          // Lógica de alerta funcional
+          if (data.state === "open" && data.timestamp) {
+            const timestamp = new Date(data.timestamp).getTime();
+            const now = Date.now();
+            const minutosAbierta = (now - timestamp) / 1000 / 60;
+            if (minutosAbierta > 5.5) {
+              setAlertaPuertaVisible(true);
+            } else {
+              setAlertaPuertaVisible(false);
+            }
+          } else {
+            setAlertaPuertaVisible(false);
+          }
+        })
+        .catch(() => {
+          setEstadoPuerta({ state: 'desconocido', name: '' });
+          setAlertaPuertaVisible(false);
+        });
+
+      // Accesos recientes desde BD
+      fetch('http://localhost:3000/api/auth/access-events/recent', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          const sanitizedEvents = (data.events || []).map(event => ({
+            ...event,
+            userName: sanitizeString(event.userName || ''),
+            cardId: sanitizeString(event.cardId || ''),
+            doorName: sanitizeString(event.doorName || event.doorId || ''),
+            userId: sanitizeString(event.userId || '')
+          }));
+          setAccesosRecientes(sanitizedEvents);
+        })
+        .catch(() => setAccesosRecientes([]));
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  //Alerta de deshabilitación permanente
   useEffect(() => {
     if (!alerta) return;
-    const timeout = setTimeout(() => setAlerta(null), 2700);
-    return () => clearTimeout(timeout);
+
+    if (alerta.autoRedirect) {
+      let seconds = 4; 
+      const updateTimer = () => {
+        const timerSpan = document.getElementById('redirect-timer');
+        if (timerSpan) timerSpan.textContent = seconds;
+      };
+      updateTimer();
+      const interval = setInterval(() => {
+        seconds--;
+        updateTimer();
+        if (seconds <= 0) {
+          clearInterval(interval);
+          localStorage.clear();
+          window.location.href = 'http://localhost:3001/';
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      const timeout = setTimeout(() => setAlerta(null), 2700);
+      return () => clearTimeout(timeout);
+    }
   }, [alerta]);
 
-  const cerrarAlerta = () => setAlertaVisible(false);
   const handleShowDetails = (usuario) => {
-    setSelectedUser(usuario);
+    // Sanitiza datos del usuario seleccionado
+    const sanitizedUser = {
+      ...usuario,
+      firstName: sanitizeString(usuario.firstName || ''),
+      lastName: sanitizeString(usuario.lastName || ''),
+      email: sanitizeString(usuario.email || ''),
+      username: sanitizeString(usuario.username || ''),
+      role: sanitizeString(usuario.role || ''),
+      cardId: sanitizeString(usuario.cardId || ''),
+      door: sanitizeString(usuario.door || ''),
+      status: sanitizeString(usuario.status || '')
+    };
+    setSelectedUser(sanitizedUser);
     setModalVisible(true);
   };
+  
   const closeModal = () => {
     setModalVisible(false);
     setSelectedUser(null);
   };
-  const handleLogout = () => {
-    localStorage.removeItem('role');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  };
 
-  // --- ACCESOS RECIENTES DEMO ---
-  const accesosRecientes = [
-    {
-      id: '1',
-      nombre: "Ana Gómez",
-      username: "ana.gomez",
-      codigo: "A12345",
-      iniciales: "AG",
-      ubicacion: "Puerta Norte",
-      tiempo: "08:15 AM • 27 Jun 2025",
-      role: "Docente",
-      email: "ana.gomez@ejemplo.com",
-      firstName: "Ana",
-      lastName: "Gómez",
-      cardId: "A12345",
-      status: "Activo",
-      door: "Puerta Norte",
-      foto: anaGomezFoto
-    },
-    {
-      id: '2',
-      nombre: "Luis Torres",
-      username: "luis.torres",
-      codigo: "B23456",
-      iniciales: "LT",
-      ubicacion: "Puerta Principal",
-      tiempo: "08:20 AM • 27 Jun 2025",
-      role: "Administrador",
-      email: "luis.torres@ejemplo.com",
-      firstName: "Luis",
-      lastName: "Torres",
-      cardId: "B23456",
-      status: "Inactivo",
-      door: "Puerta Principal",
-      foto: luisTorresFoto
-    },
-    {
-      id: '3',
-      nombre: "María López",
-      username: "maria.lopez",
-      codigo: "C34567",
-      iniciales: "ML",
-      ubicacion: "Puerta Este",
-      tiempo: "08:25 AM • 27 Jun 2025",
-      role: "Estudiante",
-      email: "maria.lopez@ejemplo.com",
-      firstName: "María",
-      lastName: "López",
-      cardId: "C34567",
-      status: "Activo",
-      door: "Puerta Este",
-      foto: mariaLopezFoto
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('role');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Fallback en caso de error
+      window.location.href = '/';
     }
-  ];
+  };
 
   return (
     <>
@@ -387,21 +497,22 @@ export default function AdminHomeScreen() {
             {/* ALERTA FLOTANTE (fuera de la tarjeta) */}
             {alerta && <AlertOutside type={alerta.type} msg={alerta.msg} />}
 
-            {alertaVisible && (
+            {/* ALERTA DE PUERTA FUNCIONAL */}
+            {alertaPuertaVisible && (
               <div className={styles.alertaPuerta}>
                 <span className={styles.textoAlerta}>
-                  La puerta ha estado abierta por más de 15 minutos
+                  La puerta ha estado abierta por más de 5 minutos. Se le aconseja cerrarla.
                 </span>
                 <button
                   className={styles.botonCerrarAlerta}
-                  onClick={cerrarAlerta}
+                  onClick={() => setAlertaPuertaVisible(false)}
                 >
                   ×
                 </button>
               </div>
             )}
 
-            {/* ---- GRID LAYOUT PRINCIPAL ---- */}
+            {/* GRID LAYOUT PRINCIPAL */}
             <div className={styles.superiorLayout}>
               <div className={styles.leftColumn}>
                 {/* PERFIL del USUARIO conectado */}
@@ -409,7 +520,7 @@ export default function AdminHomeScreen() {
                   <div className={styles.avatarPerfil}>
                     <img
                       className={styles.avatarPerfil}
-                      src={userProfile.foto}
+                      src={safeImgSrc(String(userProfile.foto), javierVazquezFoto)}
                       alt={`${userProfile.firstName} ${userProfile.lastName} - usuario`}
                     />
                   </div>
@@ -437,11 +548,11 @@ export default function AdminHomeScreen() {
                 </div>
               </div>
               <div className={styles.rightColumn}>
-                {/* ---- TARJETA ADMIN VIRTUAL (panel de acciones) ---- */}
+                {/* TARJETA ADMIN VIRTUAL PANEL DE ACCIONES*/}
                 <AdminVirtualCard3D
                   user={userProfile}
                   card={card}
-                  onStatusChange={() => {}}
+                  onStatusChange={() => { }}
                   onAlert={setAlerta}
                 />
               </div>
@@ -452,14 +563,29 @@ export default function AdminHomeScreen() {
               <div className={styles.contenedorTarjetasUnificado}>
                 <div className={styles.tarjetaPersonas}>
                   <h2 className={styles.tituloPersonas}>Personas ingresadas</h2>
-                  <span className={styles.numeroPersonas}>1245</span>
+                  <span className={styles.numeroPersonas}>{totalPersonas}</span>
                   <span className={styles.etiquetaPersonas}>
                     Total de accesos
                   </span>
                 </div>
                 <div className={styles.tarjetaEstado}>
                   <h2 className={styles.tituloEstado}>Estado de puerta</h2>
-                  <span className={styles.estadoPuerta}>Abierta</span>
+                  <span
+                    className={[
+                      styles.estadoPuerta,
+                      estadoPuerta.state === "open"
+                        ? styles.estadoPuertaAbierta
+                        : estadoPuerta.state === "close"
+                          ? styles.estadoPuertaCerrada
+                          : ""
+                    ].join(" ")}
+                  >
+                    {estadoPuerta.state === "open"
+                      ? "Abierta"
+                      : estadoPuerta.state === "close"
+                        ? "Cerrada"
+                        : "Desconocido"}
+                  </span>
                   <span className={styles.etiquetaEstado}>Estado actual</span>
                 </div>
               </div>
@@ -471,25 +597,27 @@ export default function AdminHomeScreen() {
                 </div>
                 <div className={styles.listaAccesos}>
                   {accesosRecientes.map((acceso) => (
-                    <div key={acceso.id} className={styles.itemAcceso}>
+                    <div key={acceso._id} className={styles.itemAcceso}>
                       <div className={styles.avatarAcceso}>
                         <img
                           className={styles.avatarUsers}
-                          src={acceso.foto}
-                          alt={`${acceso.nombre} - ${acceso.role}`}
+                          src={safeImgSrc(typeof acceso.foto === 'string' ? acceso.foto : '', javierVazquezFoto)}
+                          alt={acceso.userName || acceso.userId || "Usuario"}
                         />
                       </div>
                       <div className={styles.infoAcceso}>
-                        <div className={styles.nombreAcceso}>{acceso.nombre}</div>
+                        <div className={styles.nombreAcceso}>{acceso.userName || "Sin nombre"}</div>
                         <div className={styles.codigoAcceso}>
-                          ({acceso.codigo})
+                          ({acceso.cardId || "Sin tarjeta"})
                         </div>
                       </div>
                       <div className={styles.detallesAcceso}>
                         <div className={styles.ubicacionAcceso}>
-                          {acceso.ubicacion}
+                          {acceso.doorName || acceso.doorId || "Desconocido"}
                         </div>
-                        <div className={styles.tiempoAcceso}>{acceso.tiempo}</div>
+                        <div className={styles.tiempoAcceso}>
+                          {acceso.timestamp ? formatDate(acceso.timestamp) : "Sin fecha"}
+                        </div>
                       </div>
                       <button
                         className={styles.botonInfo}
@@ -516,8 +644,8 @@ export default function AdminHomeScreen() {
             <div className={styles.userModalHeader}>
               <div className={styles.userModalAvatar}>
                 <img
-                  src={selectedUser.foto}
-                  alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                  src={safeImgSrc(typeof selectedUser.foto === 'string' ? selectedUser.foto : '', javierVazquezFoto)}
+                  alt={`${selectedUser.firstName || ""} ${selectedUser.lastName || ""}`}
                   style={{
                     width: '80px',
                     height: '80px',

@@ -1111,3 +1111,22 @@ button:focus,
     max-width: 98vw;
   }
 }
+.stickyToolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--fondoTarjeta);
+  padding-top: 10px;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 500px) {
+  .stickyToolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

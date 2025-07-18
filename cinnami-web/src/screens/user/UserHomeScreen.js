@@ -8,7 +8,7 @@ import ModalLogout from "../../components/logout/ModalLogout";
 import { FaUserEdit } from "react-icons/fa";
 import { useLoader } from "../../context/LoaderContext";
 
-// --- Alerta bonita de cambios para usuario ---
+//Alerta de cambios para usuario
 function UserChangesAlert({ oldData, newData, onClose }) {
   const prettyLabel = {
     firstName: "Nombre(s)",
@@ -18,7 +18,7 @@ function UserChangesAlert({ oldData, newData, onClose }) {
     role: "Rol",
     cardId: "Tarjeta"
   };
-
+// Generar campos cambiados
   const changedFields = [];
   Object.keys(newData).forEach(key => {
     if ((oldData[key] || "") !== (newData[key] || "")) {
@@ -89,7 +89,7 @@ function UserChangesAlert({ oldData, newData, onClose }) {
   );
 }
 
-// ---- Componente principal ----
+//Componente principal 
 export default function UserHomeScreen() {
   // Estado de usuario
   const [userProfile, setUserProfile] = useState({
@@ -114,7 +114,7 @@ export default function UserHomeScreen() {
     email: "",
   });
   const [showLogout, setShowLogout] = useState(false);
-  const [changesAlert, setChangesAlert] = useState(null); // <- Alerta de cambios
+  const [changesAlert, setChangesAlert] = useState(null); 
 
   // Loader global
   const { showLoader, hideLoader } = useLoader();
@@ -176,7 +176,7 @@ export default function UserHomeScreen() {
     setCardUID(match ? match.uid : "");
   }, [userProfile.cardId, allCards]);
 
-  // DEMO Accesos recientes (simulación)
+  //Accesos recientes
   const mockAccessData = [
     {
       id: 1,
@@ -209,7 +209,7 @@ export default function UserHomeScreen() {
     setModalVisible(true);
   };
 
-  // -------- MODAL EDICIÓN DE USUARIO --------
+  //MODAL EDICIÓN DE USUARIO
   const openEditUserModal = () => {
     setFormData({
       firstName: userProfile.firstName,
@@ -231,7 +231,7 @@ export default function UserHomeScreen() {
       alert("Todos los campos son obligatorios");
       return;
     }
-    const oldData = { ...userProfile }; // antes de actualizar
+    const oldData = { ...userProfile }; 
     showLoader("Actualizando...");
     try {
       const res = await fetch(
@@ -247,7 +247,7 @@ export default function UserHomeScreen() {
             lastName: formData.lastName,
             username: formData.username,
             email: formData.email,
-            cardId: userProfile.cardId || "", // Siempre envía cardId para evitar error backend
+            cardId: userProfile.cardId || "",
           }),
         }
       );
@@ -272,7 +272,7 @@ export default function UserHomeScreen() {
           email: formData.email,
         }));
         setShowEditModal(false);
-        // Mostrar alerta bonita de cambios
+        // Mostrar alerta de cambios
         setChangesAlert({
           oldData,
           newData: {
@@ -305,7 +305,7 @@ export default function UserHomeScreen() {
     }, 1200);
   };
 
-  // Botón de editar (redondo, gradiente, icono pro)
+  // Botón de editar 
   const EditButton = (
     <button
       onClick={openEditUserModal}
@@ -316,7 +316,7 @@ export default function UserHomeScreen() {
     </button>
   );
 
-  // Mostrar alerta de cambios (si existe)
+  // Mostrar alerta de cambios
   if (changesAlert) {
     return (
       <UserChangesAlert
@@ -333,13 +333,13 @@ export default function UserHomeScreen() {
       <div className={styles.contenidoConMargen}>
         <section className={styles.seccionPrincipal}>
           <div className={styles.contenedorPrincipal}>
-            {/* --------- CABECERA DINÁMICA DE USUARIO --------- */}
+            {/*CABECERA DINÁMICA DE USUARIO */}
             <div className={styles.contenidoPrincipal}>
               <div className={styles.perfilUsuario}>
                 <div className={styles.avatarPerfil}>
                   <img
                     className={styles.avatarPerfil}
-                    src={userProfile.foto}
+                    src={userfoto2} 
                     alt={`${userProfile.firstName} ${userProfile.lastName} - usuario`}
                   />
                 </div>
@@ -520,7 +520,7 @@ export default function UserHomeScreen() {
         </div>
       )}
 
-      {/* -------- MODAL EDICIÓN DE USUARIO (ESTILO ADMIN) -------- */}
+      {/*MODAL EDICIÓN DE USUARIO*/}
       {showEditModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContentForm} style={{ maxWidth: 480 }}>

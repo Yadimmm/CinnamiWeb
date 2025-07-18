@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import CinnamiLoader from "../components/CinnamiLoader/CinnamiLoader";
 
 const LoaderContext = createContext();
-
+// Carga el contexto del Loader
 export function LoaderProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loaderText, setLoaderText] = useState("cargando ...");

@@ -1,6 +1,7 @@
 import React from 'react';
-import styles from './ConfirmModal.module.css'; // Te paso CSS abajo
+import styles from './ConfirmModal.module.css'; 
 
+// ConfirmModal component
 export default function ConfirmModal({ open, onCancel, onConfirm, title, message }) {
   if (!open) return null;
 

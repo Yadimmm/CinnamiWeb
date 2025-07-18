@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './DoorStatusScreen.module.css';
 import NavigationMenu from '../../components/Navigation/NavigationMenu';
-
+// Componente para el estado de la puerta
 const DoorStatusScreen = () => {
   const [puertaAbierta, setPuertaAbierta] = useState(false);
   const [timerPuerta, setTimerPuerta] = useState(null);

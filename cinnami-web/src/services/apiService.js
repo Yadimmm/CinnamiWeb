@@ -1,12 +1,11 @@
 import { API_BASE_URL } from '../utils/constant';
 
-// INICIAR SESIÓN (¡CORREGIDO! Usa identifier)
+// INICIAR SESIÓN 
 export async function login(email, password) {
   const response = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    // Cambia email → identifier, porque tu backend así lo espera
     body: JSON.stringify({ identifier: email, password }),
   });
 
@@ -21,7 +20,7 @@ export async function login(email, password) {
   return await response.json();
 }
 
-// TRAER PERFIL DE USUARIO (por ID, después de login)
+// TRAER PERFIL DE USUARIO
 export async function getUserProfile(userId, token) {
   const response = await fetch(`${API_BASE_URL}/all-users`, {
     headers: { Authorization: `Bearer ${token}` },

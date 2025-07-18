@@ -2,10 +2,12 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet'; 
 import authRoute from './routes/auth.routes';
 import connectDBMongo from './config/db';
 
-dotenv.config(); // Carga variables del .env
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -14,9 +16,13 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const allowedOrigins = [
   'http://localhost:3001',
   'http://127.0.0.1:3001',
-  'http:// 172.20.30.248:3001',
+  'http://172.20.30.248:3001', 
 ];
 
+// Helmet primero para proteger los headers HTTP
+app.use(helmet());
+
+// CORS configurado
 app.use(cors({
   origin: function (origin, callback) {
     // Permite herramientas como Postman/curl sin origin
@@ -38,14 +44,12 @@ app.get('/', (req, res) => {
   res.send('¡API de Cinnami funcionando! Para usar la API, visita /api/auth/*');
 });
 
-// CONEXIÓN A MONGODB Y ARRANQUE DEL SERVIDOR
+// Conexion a la base de datos y arranque del servidor
 connectDBMongo().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`El servidor funciona en el puerto: ${PORT}`);
     console.log(`Puedes acceder desde:`);
     console.log(`- http://localhost:${PORT}/`);
-    // Si quieres ver tu IP local para la red, descomenta la siguiente línea:
-    // console.log(`- http://${require('os').networkInterfaces().en0?.[1]?.address}:${PORT}/`);
   });
 }).catch((error) => {
   console.error("Error al conectar a la base de datos:", error);
